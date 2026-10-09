@@ -1,0 +1,39 @@
+FM-1 to SMK-37 Pro: porting custom firmware
+Copyright (c) 2026 M. Geisler (makkuro) <mcgeisler@gmail.com>
+
+The text, tables and figures in this repository are licensed under the
+Creative Commons Attribution-NonCommercial 4.0 International License
+(CC BY-NC 4.0).
+
+You are free to share (copy and redistribute the material in any medium or
+format) and adapt (remix, transform, and build upon the material) under the
+following terms:
+
+  - Attribution: you must give appropriate credit, provide a link to the
+    license, and indicate if changes were made. You may do so in any
+    reasonable manner, but not in any way that suggests the licensor
+    endorses you or your use.
+  - NonCommercial: you may not use the material for commercial purposes.
+  - No additional restrictions: you may not apply legal terms or
+    technological measures that legally restrict others from doing anything
+    the license permits.
+
+Summary:    https://creativecommons.org/licenses/by-nc/4.0/
+Legal code: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+
+The legal code at the link above is the binding license text. This notice is
+a summary and does not replace it.
+
+------------------------------------------------------------------------------
+Firmware code is not covered by this license
+------------------------------------------------------------------------------
+
+This repository is a guide. It contains no firmware code. The firmware
+projects and patches it refers to (Felucca, SLOOP and their forks, Makkuro37
+and its smk37-board patch series) are licensed under the GNU General Public
+License version 3 (GPL-3.0) in their own repositories, and their licenses
+apply to them. Short command lines and identifiers quoted in this guide may
+be used freely.
+
+M-Vave, SMK-37 Pro, FM-1 and JieLi are names of their respective owners.
+This project is not affiliated with or endorsed by them.
