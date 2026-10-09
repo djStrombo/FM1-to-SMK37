@@ -15,7 +15,7 @@ So an FM-1 firmware can run on the SMK-37 Pro once you replace its board layer: 
 analog inputs, the display pins, the pad LEDs and the flash map. This guide documents that layer and shows how to
 carry it over to any Felucca-family firmware.
 
-Author: M. Geisler (makkuro).
+Author: genkigenki.
 
 ## Reference implementation
 
