@@ -120,5 +120,4 @@ The firmware code and patches this guide refers to (Felucca, SLOOP, Snoop37 and 
 series) are **not** part of this repository. They are licensed under **GPL-3.0** in their own repositories, and
 their licenses apply to them.
 
-This repository contains no M-Vave or JieLi firmware, no flash dumps, no disassembly and no tools. M-Vave,
-SMK-37 Pro and FM-1 are names of their respective owners. This project is not affiliated with M-Vave or JieLi.
+M-Vave, SMK-37 Pro and FM-1 are names of their respective owners. This project is not affiliated with M-Vave or JieLi.
