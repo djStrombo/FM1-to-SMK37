@@ -1,6 +1,6 @@
 # 04: Controls mapping
 
-How each FM-1 control and its SLOOP function lands on the SMK-37 Pro in the reference port (Makkuro37). Use it as
+How each FM-1 control and its SLOOP function lands on the SMK-37 Pro in the reference port (Snoop37). Use it as
 a template for other firmwares. The FM-1 column and the SLOOP column hold for any SLOOP fork. For a Felucca fork,
 replace the SLOOP column with the fork's own functions.
 
@@ -9,7 +9,7 @@ The SMK's extra controls (outer keys, faders, wheels, spare buttons) add to that
 
 ## Knobs, faders, wheels
 
-| FM-1 (printed) | SLOOP function | SMK-37 Pro (printed) | Makkuro37 |
+| FM-1 (printed) | SLOOP function | SMK-37 Pro (printed) | Snoop37 |
 |---|---|---|---|
 | MASTER (pot, top left) | output volume | K1 | master volume (a virtual pot: 24 of 1024 steps per detent) |
 | SELECT (large encoder) | tempo on the TRACKS screen, page left/right, visualiser style, menu section | K2 | SELECT: tempo, pages |
@@ -26,7 +26,7 @@ The SMK's extra controls (outer keys, faders, wheels, spare buttons) add to that
 
 ## Buttons
 
-| FM-1 (printed) | SLOOP tap | SLOOP hold (layer) | SMK-37 Pro (printed) | Makkuro37 |
+| FM-1 (printed) | SLOOP tap | SLOOP hold (layer) | SMK-37 Pro (printed) | Snoop37 |
 |---|---|---|---|---|
 | PLAY | start / stop (LED flashes on the beat) | | SEQ PLAY | PLAY |
 | REC | record / arm | 2 s: clear track | SEQ REC | REC |
@@ -49,7 +49,7 @@ The SMK's extra controls (outer keys, faders, wheels, spare buttons) add to that
 
 ## Keys and pads
 
-| FM-1 | SLOOP | SMK-37 Pro | Makkuro37 |
+| FM-1 | SLOOP | SMK-37 Pro | Snoop37 |
 |---|---|---|---|
 | 27 keys F3..G5 | notes; in layers: tiles (steps, effects, mix, ...) | middle 27 keys F3..G5 | the same, with velocity |
 | none | | lowest 5 keys C3..E3 | synth tracks: notes. Drum track: C3 kick, D3 snare, E3 hi-hat (a black key plays its left white neighbour). |

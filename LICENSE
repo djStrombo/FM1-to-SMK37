@@ -29,7 +29,7 @@ Firmware code is not covered by this license
 ------------------------------------------------------------------------------
 
 This repository is a guide. It contains no firmware code. The firmware
-projects and patches it refers to (Felucca, SLOOP and their forks, Makkuro37
+projects and patches it refers to (Felucca, SLOOP and their forks, Snoop37
 and its smk37-board patch series) are licensed under the GNU General Public
 License version 3 (GPL-3.0) in their own repositories, and their licenses
 apply to them. Short command lines and identifiers quoted in this guide may

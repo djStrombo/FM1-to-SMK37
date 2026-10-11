@@ -21,7 +21,7 @@ step. Background and reasons are in [docs/](docs/). This file only says what to 
 ## Inputs
 
 - `FW`: the firmware repository to port (URL), and its base (SLOOP release or Felucca release).
-- `REF`: `https://github.com/genkigenki/Makkuro37.git`, branch `smk37-board` (the board patch series).
+- `REF`: `https://github.com/genkigenki/Snoop37.git`, branch `smk37-board` (the board patch series).
 - A Linux or WSL2 shell with the JieLi toolchain and the AC79 SDK files the firmware's `BUILDING.md` asks for.
 
 ## Steps
@@ -41,7 +41,7 @@ Check: the build succeeds. Write down the pre-existing test failures.
 ### 2. Fetch the series
 
 ```sh
-git remote add ref https://github.com/genkigenki/Makkuro37.git && git fetch ref
+git remote add ref https://github.com/genkigenki/Snoop37.git && git fetch ref
 git log --oneline --reverse <base>..ref/smk37-board
 git format-patch <base>..ref/smk37-board -o ../smk37-patches
 git switch -c smk37

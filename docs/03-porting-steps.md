@@ -1,7 +1,7 @@
 # 03: Porting a firmware, step by step
 
 This walkthrough ports a Felucca-family FM-1 firmware to the SMK-37 Pro by applying the board patch series from
-[Makkuro37](https://github.com/genkigenki/Makkuro37) (branch `smk37-board`). The series was written against
+[Snoop37](https://github.com/genkigenki/Snoop37) (branch `smk37-board`). The series was written against
 SLOOP 2.5. File names below are SLOOP's. Felucca and its direct forks use the same HAL files and mostly the
 same source layout.
 
@@ -61,15 +61,15 @@ Many forks were started from a copy rather than a git fork. In that case, compar
 ## 2. Get the board patch series
 
 ```sh
-git remote add makkuro37 https://github.com/genkigenki/Makkuro37.git
-git fetch makkuro37
-git log --oneline --reverse <base>..makkuro37/smk37-board
+git remote add snoop37 https://github.com/genkigenki/Snoop37.git
+git fetch snoop37
+git log --oneline --reverse <base>..snoop37/smk37-board
 ```
 
 `<base>` is the SLOOP release the branch starts from (its first commit message names it). Export the series:
 
 ```sh
-git format-patch <base>..makkuro37/smk37-board -o ../smk37-patches
+git format-patch <base>..snoop37/smk37-board -o ../smk37-patches
 ```
 
 The series, in order, covers roughly these steps:
@@ -83,7 +83,7 @@ The series, in order, covers roughly these steps:
 6. **Controls:** one encoder step per detent, pad step display, outer keys, knob and fader layout, app slot size,
    pad colours, button LEDs.
 
-The Makkuro37 branding (boot intro, jingle, its own screens) lives on `main`, behind the build flag `MAKKURO37`,
+The Snoop37 branding (boot intro, jingle, its own screens) lives on `main`, behind the build flag `SNOOP37`,
 and is not part of the board series.
 
 ## 3. Apply it
@@ -99,7 +99,7 @@ git am -3 ../smk37-patches/*.patch
 `git add` the files, and run `git am --continue`. If one patch is too far off, `git am --skip` it and redo it by
 hand from the table below. Then continue with the rest.
 
-Cherry-picking works too: `git cherry-pick <base>..makkuro37/smk37-board`.
+Cherry-picking works too: `git cherry-pick <base>..snoop37/smk37-board`.
 
 **For a Felucca fork without SLOOP history,** apply patches 1 and 2 file by file. New files (`smk_input.h`,
 `fm1_flash_map.h`, the SMK tests) go in unchanged. For the changed files, read each hunk and apply its intent.

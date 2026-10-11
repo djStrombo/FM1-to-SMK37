@@ -19,10 +19,10 @@ Author: genkigenki.
 
 ## Reference implementation
 
-[**Makkuro37**](https://github.com/genkigenki/Makkuro37) is a SLOOP-based firmware for the SMK-37 Pro, and it is
+[**Snoop37**](https://github.com/genkigenki/Snoop37) is a SLOOP-based firmware for the SMK-37 Pro, and it is
 the working reference for this guide.
 
-- `main` holds the full firmware: SLOOP plus the SMK board layer plus Makkuro37's own additions (boot intro,
+- `main` holds the full firmware: SLOOP plus the SMK board layer plus Snoop37's own additions (boot intro,
   jingle, layout choices).
 - **`smk37-board`** holds only the board port, as a patch series on top of SLOOP. It contains the board
   switch, flash map, update path, input HAL, display, pad LEDs, wheels and UI mapping. Apply this series when
@@ -83,7 +83,7 @@ calibration.
 | [docs/01-hardware.md](docs/01-hardware.md) | The SMK-37 Pro hardware map compared with the FM-1: SoC, flash, display, pad LEDs, key matrix, velocity, buttons, encoders, ADC muxes, faders, wheels, pedal, battery, audio, MIDI out, USB |
 | [docs/02-update-and-recovery.md](docs/02-update-and-recovery.md) | Update protocol, package format, full flash backup, install, recovery, return to stock |
 | [docs/03-porting-steps.md](docs/03-porting-steps.md) | Step by step: source, patch series, conflicts, UI mapping, build, test on the device, install, rollback |
-| [docs/04-controls-mapping.md](docs/04-controls-mapping.md) | FM-1 to SLOOP to SMK-37 Pro to Makkuro37 control tables |
+| [docs/04-controls-mapping.md](docs/04-controls-mapping.md) | FM-1 to SLOOP to SMK-37 Pro to Snoop37 control tables |
 | [docs/05-reverse-engineering.md](docs/05-reverse-engineering.md) | How the facts were obtained, and how to reproduce them with public tools |
 | [AGENTS.md](AGENTS.md) | A condensed checklist for carrying out a port, written to be followed step by step |
 
@@ -118,7 +118,7 @@ This guide builds on the work of many people:
 The text and tables of this guide are licensed under
 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). See [LICENSE](LICENSE).
 
-The firmware code and patches this guide refers to (Felucca, SLOOP, Makkuro37 and the `smk37-board` patch
+The firmware code and patches this guide refers to (Felucca, SLOOP, Snoop37 and the `smk37-board` patch
 series) are **not** part of this repository. They are licensed under **GPL-3.0** in their own repositories, and
 their licenses apply to them.
 
