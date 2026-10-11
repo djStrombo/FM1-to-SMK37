@@ -15,6 +15,25 @@ So an FM-1 firmware can run on the SMK-37 Pro once you replace its board layer: 
 analog inputs, the display pins, the pad LEDs and the flash map. This guide documents that layer and shows how to
 carry it over to any Felucca-family firmware.
 
+## Port it with Claude
+
+You don't need to know the chip. All ports on [the SMK37 site](https://genkigenki.github.io/smk37/) were done
+this way, with [Claude Code](https://claude.com/claude-code) doing the code and the owner doing the hardware:
+
+1. Clone the firmware you want and this kit side by side, then start `claude` in that folder.
+2. Tell it:
+   *"Port `<firmware>` to the SMK-37 Pro. Follow `fm1-to-smk37/AGENTS.md` step by step. Keep the FM-1 build
+   byte-identical. Never write the protected flash ranges. Ask me before anything touches the keyboard."*
+3. Claude works through `AGENTS.md`: baseline build, the `smk37-board` patch series, storage, controls, both
+   builds, tests. It stops after each area, so you can check what it did.
+4. You do the hardware part: the full flash backup first, then install, play, and tell Claude what works and
+   what doesn't (or paste the serial console). It fixes, rebuilds, and you install again.
+5. Tell it which controls you want where. That's the fun part and where most of the time goes.
+6. When it plays well: ask Claude to open a pull request to the original firmware. Everything sits behind
+   `BOARD_SMK37`, so the FM-1 build stays the same.
+
+Any other coding agent that can read `AGENTS.md` and run a shell works too. At your own risk, as always.
+
 ## Reference implementation
 
 [**Snoop37**](https://github.com/genkigenki/Snoop37) is a SLOOP-based firmware for the SMK-37 Pro, and it is
