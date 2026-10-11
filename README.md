@@ -15,8 +15,6 @@ So an FM-1 firmware can run on the SMK-37 Pro once you replace its board layer: 
 analog inputs, the display pins, the pad LEDs and the flash map. This guide documents that layer and shows how to
 carry it over to any Felucca-family firmware.
 
-Author: genkigenki.
-
 ## Reference implementation
 
 [**Snoop37**](https://github.com/genkigenki/Snoop37) is a SLOOP-based firmware for the SMK-37 Pro, and it is
