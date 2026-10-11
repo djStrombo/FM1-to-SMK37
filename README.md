@@ -35,7 +35,7 @@ the working reference for this guide.
 | Firmware that does not use the Felucca HAL (`firmware/hal/fm1_*.h`) | other | High. Use [docs/01-hardware.md](docs/01-hardware.md) as a datasheet and write the board layer yourself. |
 
 Expect about one evening for a SLOOP fork if you already have a working build setup. A Felucca fork with its own
-storage layout takes a few days. Most of that time goes into the controls mapping, not the hardware.
+storage layout takes a day. Most of that time goes into the controls mapping, not the hardware.
 
 ## Safety first
 
