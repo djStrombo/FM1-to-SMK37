@@ -78,14 +78,14 @@ knobs:
 buttons:
   map: custom
   extra:
-    KNOB BANK: held, the help
-    FADER BANK: held, knobs = CORNER+
+    KNOB BANK: "held, the help"
+    FADER BANK: "held, knobs = CORNER+"
     "<": previous sound
     ">": next sound
   custom:
-    SEQ: tap, next path shape; held, knobs = ORBIT
-    CHORD: tap, POLY / DUAL / MONO; held, knobs = VOICE
-    ARP: tap, arpeggiator on / off; held, knobs = ARP
+    SEQ: "tap, next path shape; held, knobs = ORBIT"
+    CHORD: "tap, POLY / DUAL / MONO; held, knobs = VOICE"
+    ARP: "tap, arpeggiator on / off; held, knobs = ARP"
     SEQ REC: LATCH
     SEQ PLAY: tap tempo
     NOTE REPEAT: RETRIGGER

@@ -87,8 +87,8 @@ buttons:
   extra:
     KNOB BANK: pins the pad sound picker
     FADER BANK: the fader bank screen
-    "<": page back (SEQ held: step page back; visualiser: style)
-    ">": page forward (SEQ held: step page forward; visualiser: style)
+    "<": "page back (SEQ held: step page back; visualiser: style)"
+    ">": "page forward (SEQ held: step page forward; visualiser: style)"
 
 screen:
   style: keep               # SLOOP's screens, plus the FADER BANK screen and the picker
