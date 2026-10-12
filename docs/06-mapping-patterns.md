@@ -1,0 +1,183 @@
+# 06: Mapping patterns
+
+The SMK-37 Pro has more controls than the FM-1: ten more keys, 16 RGB pads, 4 faders, 2 wheels and 4 more
+buttons. These patterns put them to work. Each one ran on a real unit in at least one port. Pick per control
+group, write the choice into [`smk37-port.yaml`](../smk37-port.yaml), then implement it.
+
+![The SMK-37 Pro panel](../assets/smk37-panel.png)
+
+Pad numbers in this guide are in reading order: pads 1-8 are the top row (hardware pads 8..15), pads 9-16 the
+bottom row (hardware pads 0..7). The diagrams are drawn by `tools/make_panels.py`.
+
+**The base rule:** every FM-1 control keeps a home on the SMK, so the firmware's manual still applies. The extra
+controls add to that and never take something away. A new firmware (no FM-1 manual to keep) can drop this rule.
+
+## Quick chooser
+
+| Control | Pattern | Used in | Choose it when |
+|---|---|---|---|
+| Keys | [Middle 27 = FM-1 keys](#keys-the-fm-1-range-in-the-middle) | all ports | always |
+| Outer keys | [Extend, drums on a drum track](#outer-keys-extend-and-drums) | Snoop37 | the firmware has a drum track or a range limit |
+| Pads | [Steps in reading order](#pads-steps-in-reading-order) | Snoop37, X0X37, Felucca PR | the firmware has a 16-step sequencer |
+| Pads | [Sound picker](#pads-sound-picker) | Snoop37 | many presets, chosen by scrolling on the FM-1 |
+| Pads | [Voices and a CHAOS pad](#pads-voices-and-a-big-gesture) | Makkuro37 | a drone or multi-voice instrument |
+| Pads | [Strum plate](#pads-strum-plate) | FoMni37 | a chord instrument |
+| Pads | [Four corners](#pads-four-corners) | Vector37 (in progress) | a sound made of four sources or a 2D space |
+| Faders | [Banks with soft takeover](#faders-banks-with-soft-takeover) | Snoop37, Makkuro37, FoMni37 | per-track settings, more than four jobs |
+| Faders | [Fixed mixer](#faders-a-fixed-mixer) | Vector37 | one instrument, few global amounts |
+| Wheels | [Bend and vibrato, or a macro](#wheels-bend-and-vibrato-or-a-macro) | all ports | always |
+| Knobs | [The FM-1 top row](#knobs-the-fm-1-top-row) | Snoop37, X0X37, FoMni37 | keeping the FM-1 workflow |
+| Knobs | [Held button lends the knobs](#knobs-a-held-button-lends-them-a-set) | Vector37, Makkuro37 | a redesign with many parameters and no menus |
+| Buttons | [Printed meaning, four extras](#buttons-printed-meaning-and-four-extras) | all ports | always |
+
+## Keys: the FM-1 range in the middle
+
+The middle 27 keys (keybed 5..31, F3..G5) are the FM-1's note keys, with velocity from the unit's own factory
+curves (the `trimdat` record, read only). In layers where the FM-1 uses its keys as tiles (steps, effects, mix),
+the same keys do the same thing. Used by every port.
+
+## Outer keys: extend and drums
+
+![Outer keys](../assets/panel/keys-outer.svg)
+
+The 10 outer keys (C3-E3, G#5-C6) extend the keyboard by default: on a synth track they play notes. On a drum
+track they play drums, so you can finger-drum while the middle keys keep their FM-1 job. A black key plays its left
+white neighbour.
+
+- **Snoop37:** C3 kick, D3 snare, E3 hi-hat; G#5 cowbell, A5 open hi-hat, B5 crash, C6 ride.
+- **Choose:** extend when the firmware plays notes; drums when it has a drum track; transpose or off when the
+  middle keys are tiles most of the time.
+- **Watch:** an outer-key drum hit lights no pad (the pads show steps).
+
+## Pads: steps in reading order
+
+![Pads as steps](../assets/panel/pads-steps.svg)
+
+The 16 pads are the FM-1's 16 white keys F3..G5, in **reading order**: steps 1-8 on the top row, 9-16 on the
+bottom. The hardware numbers the bottom row first, so map top row = hardware pads 8..15. Pads light in the
+screen's track colours: steps that are on are lit, the playhead and hits bright, off is dark (no glow layers).
+Pads play with velocity.
+
+- **Used in:** Snoop37 (also a piano layout in the SEL layer, save slots in the SAVE layer), X0X37 (the step
+  grid), the Felucca PR.
+- **Choose:** the firmware sequences 16 steps, or its white keys are tiles. This is the default.
+
+## Pads: sound picker
+
+![Pad sound picker](../assets/panel/pads-picker.svg)
+
+Turning the sound knob (K4, PRESETS) shows the sounds of one kind on the pads and the screen. A pad picks and
+previews, `<` `>` page through the kinds, and a button (KNOB BANK) pins the picker open. After a knob turn it stays
+for a short time, then the pads go back to steps.
+
+- **Used in:** Snoop37.
+- **Choose:** the firmware has many presets that the FM-1 can only scroll through.
+
+## Pads: voices and a big gesture
+
+![Pads as voices](../assets/panel/pads-perform.svg)
+
+The pads gate voices: the top row wakes and sleeps voice 1..8, the voice's colour on the pad, its knob and the
+screen. One pad does a big gesture (CHAOS) that is hard to do with knobs.
+
+- **Used in:** Makkuro37 (eight drone voices).
+- **Choose:** a drone, a multi-voice or a live-performance instrument without a step sequencer.
+
+## Pads: strum plate
+
+![Pads as a strum plate](../assets/panel/pads-strum.svg)
+
+The pads are 16 strings: top row low, bottom row high. The keybed holds the chord; a finger across a row strums
+it. A string lights while it rings; at rest the root strings glow dimly. Velocity sets loudness and brightness.
+
+- **Used in:** FoMni37 (the Omnichord-style chord harp).
+- **Choose:** a chord instrument, an arpeggiator or anything played by sweeping.
+
+## Pads: four corners
+
+![Pads as four corners](../assets/panel/pads-xy.svg)
+
+Four 2x2 groups, each one job (select, mode, filter, mute). Inside each group, top left is corner 1, top right
+corner 2, bottom left 3, bottom right 4, the same as on the screen. Each pad is as bright as its corner is heard
+right now, so the pads show the sound moving.
+
+- **Used in:** Vector37 (in progress).
+- **Choose:** a sound made from four sources, an XY space, or any four-part instrument.
+
+## Faders: banks with soft takeover
+
+![Fader banks](../assets/panel/faders-banks.svg)
+
+Fader i sets track i, in the track's colour. FADER BANK picks what they set: **A** level, **B** filter
+(low-pass left, open centre, high-pass right), **C** reverb send, **D** delay send. A fader takes over only once it
+moves, also after a bank change, so nothing jumps. A FADER BANK screen shows all four banks; its LED is lit off
+bank A.
+
+- **Used in:** Snoop37 (as above), Makkuro37 (banks FX L, FX R, LFO, PLAY, OUTPUT), FoMni37 (banks A and B).
+- **Choose:** per-track settings, or more than four things worth a fader.
+
+## Faders: a fixed mixer
+
+![Faders as a mixer](../assets/panel/faders-mixer.svg)
+
+One job per fader, always the same: reverb, delay, chorus, volume. Moving one shows a bar over the screen for a
+moment. Soft takeover still applies at power-on.
+
+- **Used in:** Vector37.
+- **Choose:** a single instrument with a few global amounts. No bank state to remember.
+
+## Wheels: bend and vibrato, or a macro
+
+![Wheels](../assets/panel/wheels.svg)
+
+Pitch wheel = bend (Snoop37: +-7 semitones on the selected track; FoMni37 and Vector37: +-2). Mod wheel = vibrato
+(Snoop37: 10 Hz, up to +-1 semitone, up = more), or one performance macro (Vector37: the suborbit size). The
+wheels calibrate themselves: centre taken at power-on, the range widens as the wheel is seen to move, with a dead
+band around the centre.
+
+- **Choose:** bend and vibrato unless the instrument has one gesture worth a wheel.
+
+## Knobs: the FM-1 top row
+
+![Knobs as the FM-1 top row](../assets/panel/knobs.svg)
+
+K1-K8 are the FM-1's top row: K1 is a virtual MASTER pot (the FM-1's pot is absolute; K1 is an encoder, so it
+steps a stored value, 24 of 1024 per detent in Snoop37), K2 SELECT, K3 ALGORITHM, K4 PRESETS, K5-K8 the screen's
+four dials in their colours. One encoder step per detent.
+
+- **Used in:** Snoop37, X0X37, FoMni37.
+- **Choose:** keeping the FM-1 workflow. Matching knob caps make it obvious.
+
+## Knobs: a held button lends them a set
+
+![A held button lends the knobs](../assets/panel/knobs-hold.svg)
+
+The knobs have one main set. Holding a button gives them that button's eight jobs (CHORD: attack, decay, ...);
+the screen lists the eight while the button is held. Letting go returns to the main set. Makkuro37 uses a related
+rule: a button opens a menu, K1-K8 set its eight columns, `<` `>` turn the pages.
+
+- **Used in:** Vector37, Makkuro37.
+- **Choose:** a redesign with many parameters and no menus.
+
+## Buttons: printed meaning and four extras
+
+![Buttons](../assets/panel/buttons.svg)
+
+The FM-1's 14 buttons keep their jobs on the SMK button that means the same: PATCH = HOME, CHORD = ENV,
+NOTE REPEAT = LFO, SCALE = SEL, PARA = EDIT, GLOBE = GLO, BT = SAVE, SEQ PLAY = PLAY, SEQ REC = REC, OCTAVE-/+ =
+OCT-/+. The four extras: KNOB BANK and FADER BANK for banks or pins, `<` `>` for pages (never tempo). Full table:
+[04-controls-mapping.md](04-controls-mapping.md).
+
+## Screen and UX rules
+
+These are the owner's rules from the ports so far. Keep them unless the owner says otherwise.
+
+1. **Group by meaning.** Screens are laid out by function, the knob block at the bottom of the screen, not in
+   the hardware's order.
+2. **Touch, then see.** The screen shows what you touch first: the value next to the thing it changes, and a
+   short hint line saying what the control does.
+3. **Same colour, same place.** A colour means the same thing on the screen, the pads and the knob caps; the
+   screen's layout follows the panel's.
+4. **No hidden modes.** Every state is visible (an LED, a header, a colour). A held button only lends something
+   while it is held.
+5. **Play first.** Sound on power-on, few menus, nothing that needs the manual to make a noise.
