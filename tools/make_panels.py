@@ -219,6 +219,15 @@ def patterns():
                                          ("#bfe6ff", "playhead / hit: bright (pad 6)"),
                                          (DIM, "off is dark"), (CY, "read like text: steps 1-8 top, 9-16 bottom")])
 
+    # pads: 16 RGB velocity pads, state at a glance
+    lit = {}
+    for i in range(16):
+        t = (i % 8) // 2
+        on = i in (0, 2, 3, 5, 6, 9, 10, 12, 15)
+        lit[f"p{i + 1}"] = (TRK[t], "", i in (3, 12)) if on else (None, "")
+    P["pads-rgb"] = panel(lit, legend=[(TRK[0], "16 velocity pads, each with an RGB LED"),
+                                       (TRK[2], "show state at a glance: track colours, playhead, what is on")])
+
     # pads: the sound picker
     lit = {f"p{i + 1}": (TRK[1], s) for i, s in enumerate(
         ["PNO", "EP", "ORG", "PAD", "STR", "BRS", "BELL", "PLK", "BASS", "SAW", "SQR", "FM", "VOX", "NOIS", "ACID", "SUB"])}
