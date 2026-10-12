@@ -11,7 +11,8 @@ and to develop for both boards from one source.
 
 ## Steps to migrate
 
-1. **Start `claude`** in an empty folder and paste the prompt. It clones the firmware and this kit:
+1. **Start [Claude Code](https://claude.com/claude-code)** in an empty folder on Linux or WSL2 and paste the prompt.
+   It clones the firmware and this kit and sets up the toolchain; you approve each command:
    ```text
    Clone <firmware repo> and github.com/genkigenki/fm1-to-smk37, then port the firmware to the
    SMK-37 Pro. Follow fm1-to-smk37/AGENTS.md step by step.
