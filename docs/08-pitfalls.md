@@ -39,6 +39,7 @@ Things that went wrong in earlier ports, and the fix. Check this list before ste
 | Commands sent from Git Bash to WSL lose their `$` variables. | Run builds and tests inside WSL; put longer commands in a script and run `wsl bash script.sh`. |
 | The firmware's own agent file says to merge or push automatically. | The kit's rules win: work on `smk37`, the owner merges and pushes. |
 | An upstream PR edited the live site: `docs/` is generated from `web/` by `make_site.py` and published by the maintainer (found in a SLOOP review). | A PR changes sources only. Leave `docs/` and other generated or published directories to the maintainer's build. Put SMK docs at the top level (`SMK37.md`) or elsewhere outside the published tree. |
+| A merged port broke the maintainer's browser emulator (`web/emu/build.sh`): the shared sources used `FL_JEDEC_OK` and `FM1_OCT_BOTH` from `hal/`, which the emulator does not include (found in a MAKU merge, reverted). | Build every target the repo has before a PR: the firmware, the emulator / simulator and what CI runs. Define new shared macros where the emulator can see them too (e.g. in `web/emu/*.c` with the FM-1's values). |
 | Host tests on glibc fail on `clock_gettime` and friends with `-std=c99`. | `CC='cc -D_DEFAULT_SOURCE' sh tests/run_tests.sh` (some forks need `-D_GNU_SOURCE`, others nothing). |
 
 ## Hardware

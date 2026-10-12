@@ -186,6 +186,9 @@ sh build.sh && sha256sum -c ../fm1-reference.sha256     # FM-1 last, so the test
 sh tests/run_tests.sh                                   # no new failures compared with step 1
 ```
 
+If the firmware has other builds (a browser emulator in `web/emu/`, a simulator, CI workflows), build and run them too:
+they often compile `firmware/src/` without `hal/`, so a new macro the shared sources use must be defined there as well.
+
 A comparison on another day: `git worktree add ../fm1-base <base>`, build there, and compare with that.
 
 Keep SMK code in board files and `#if BOARD_SMK37` blocks. See [docs/07-develop-for-both.md](docs/07-develop-for-both.md).
