@@ -25,6 +25,7 @@ Things that went wrong in earlier ports, and the fix. Check this list before ste
 | The installer does not find a keyboard running another port. | Port-name filters must include every firmware's USB name. Add yours to the installers you ship. |
 | Another firmware's identity reply ends its text early; string compares fail. | Parse identities up to the first NUL byte. |
 | Windows shows MIDI ports as `MIDIIN2 (name)` and similar. | Match port names by substring, case-insensitive. |
+| The installer's `resume()` (device already in update mode) wrote any loader, while `install()` checked the model: with SMK loaders accepted, an SMK in update mode could get an FM-1 package (found in a SLOOP review). | `resume()` takes the package identity and checks the loader's model by `install()`'s rule (equality, or the same-keyboard rule); without the identity it writes nothing. Every caller passes it. Test both: wrong model and no identity, nothing served. |
 
 ## Build and tests
 
@@ -37,6 +38,7 @@ Things that went wrong in earlier ports, and the fix. Check this list before ste
 | Font and image tools fail with `ImageFont has no attribute 'Layout'`. | They need Pillow with raqm; distribution packages are often too old. `python3 -m venv ~/.venv-fw && ~/.venv-fw/bin/pip install Pillow fonttools`; check `features.check('raqm')`. |
 | Commands sent from Git Bash to WSL lose their `$` variables. | Run builds and tests inside WSL; put longer commands in a script and run `wsl bash script.sh`. |
 | The firmware's own agent file says to merge or push automatically. | The kit's rules win: work on `smk37`, the owner merges and pushes. |
+| An upstream PR edited the live site: `docs/` is generated from `web/` by `make_site.py` and published by the maintainer (found in a SLOOP review). | A PR changes sources only. Leave `docs/` and other generated or published directories to the maintainer's build. Put SMK docs at the top level (`SMK37.md`) or elsewhere outside the published tree. |
 | Host tests on glibc fail on `clock_gettime` and friends with `-std=c99`. | `CC='cc -D_DEFAULT_SOURCE' sh tests/run_tests.sh` (some forks need `-D_GNU_SOURCE`, others nothing). |
 
 ## Hardware

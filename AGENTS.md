@@ -25,11 +25,16 @@ rules win over the firmware's own agent files (`CLAUDE.md`, `AGENTS.md`), for ex
 5. **Return to stock stays possible.** Each package carries its model's identity (step 7), so M-Vave's updater
    still accepts the factory firmware afterwards.
 6. **Git stays with the owner.** Work on a branch `smk37`. Never merge, push, tag or open a pull request without
-   the owner's OK.
+   the owner's OK. An upstream pull request changes sources only: never the live site or generated directories
+   (for example `docs/` when the maintainer publishes it from `web/` with `make_site.py`).
 7. **No vendor material** in any repository: no stock firmware, dumps, disassembly or decompiled code. No local
    paths, port names, serial numbers or e-mail addresses in docs, logs or commits you publish.
 8. **No guessing on the panel.** Every mapping decision comes from the owner's answers in `smk37-port.yaml`.
    If something is not decided there, ask.
+9. **Installers check the model on every path.** Once an installer accepts SMK loaders (`ota-SMK-37 Pro_9XX`), its
+   resume path (device already in update mode, then write) checks the loader's model against the package being
+   written, by the same rule as `install()` (model equality or the same-keyboard rule). Without the package's
+   identity it writes nothing. Cover both cases with a test.
 
 ## Inputs
 
@@ -167,8 +172,8 @@ Implement `smk37-port.yaml`, using [docs/06-mapping-patterns.md](docs/06-mapping
    unless the owner asked for it.
 7. The screen rules: the screen shows what you touch first, same colours and places as the panel, no hidden modes.
 
-If the fork stores a button map, give the SMK its own magic number. Write the controls table (`docs/SMK37.md`) as
-you go. Host UI tests: run the fork's tests for the FM-1; most forks have no SMK UI test, so say which mapping
+If the fork stores a button map, give the SMK its own magic number. Write the controls table (`SMK37.md` at the
+top level, or another place the fork does not publish) as you go. Host UI tests: run the fork's tests for the FM-1; most forks have no SMK UI test, so say which mapping
 parts are untested until the device loop.
 
 ## 5. Build both
@@ -218,8 +223,12 @@ NUL.
 
 - **Own release:** a README with the build commands, the controls table, the backup and the rollback, and the
   `.fwsc` per model under the fork's license (GPL-3.0). Never attach stock files or dumps.
-- **Upstream pull request:** one clean commit behind `BOARD_SMK37`, branding removed, `docs/SMK37.md` with the
+- **Upstream pull request:** one clean commit behind `BOARD_SMK37`, branding removed, `SMK37.md` with the
   controls. The PR text says the FM-1 build is unchanged and offers to maintain the target or split the commit.
+  Sources only: leave generated and published directories (the site in `docs/`, built installer copies) to the
+  maintainer's build, and keep the SMK docs at the top level or in a place the site does not publish.
+- **Installer:** before delivering, check the resume path (hard rule 9): an SMK loader never gets an FM-1
+  package, an FM-1 loader never an SMK one, and a resume without the package's identity writes nothing.
 - Commit messages describe the change. The owner merges, pushes and publishes.
 
 ## Done when
@@ -230,4 +239,6 @@ NUL.
 - [ ] The flash allow-list and its asserts are unchanged or stricter; no object in a protected range
 - [ ] The device checklist passes on a real unit (owner confirmed)
 - [ ] One package per supported model, each with its model's identity
+- [ ] Every installer path (install and resume) checks the model against the package, with tests
+- [ ] An upstream PR touches no generated or published directory
 - [ ] The README documents the SMK build, the controls, the backup and the rollback

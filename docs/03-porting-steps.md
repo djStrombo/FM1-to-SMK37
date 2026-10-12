@@ -154,7 +154,7 @@ files, read each hunk and apply its intent.
 | MIDI | `src/felucca.c` | TRS MIDI IN forced off on the SMK, with a build error if it is switched on | PH8 is a matrix row on the SMK. Keep the guard. |
 | UI | `src/main.c`, `src/panel.c`, `src/ui_input.c`, `src/seq.c`, `src/voice.c`, `src/bootguard.h` | button and knob defaults, pads as white keys, outer keys, faders, wheels, LED rules, power-on combos on the SMK's OCTAVE buttons | Expect most conflicts here. See section 5. |
 | Console | `src/console.c` | debug commands `smk`, `padtest`, `leds` | |
-| Host tools | `tools/fm1_install.py`, `web/fm1pkg.js`, `web/fm1ota.js`, web installer page | SMK port names, SMK identities, 20- or 36-block packages checked by CRC, the stock SMK package accepted for the return to stock | Forks often have their own web installer. Port the block detection and the port-name filter into it. |
+| Host tools | `tools/fm1_install.py`, `web/fm1pkg.js`, `web/fm1ota.js`, web installer page | SMK port names, SMK identities, 20- or 36-block packages checked by CRC, the stock SMK package accepted for the return to stock | Forks often have their own web installer. Port the block detection and the port-name filter into it. Once it accepts SMK loaders, `resume()` must check the loader's model against the package (as `install()` does) and write nothing without the package identity; add a test. In an upstream PR, change `web/` only, never the built copy in `docs/`. |
 | Tests | `tests/*` | SMK flash-map test, package layout test, SMK variants of the update and loader tests | Run them. The loader test checks that the protected ranges stay untouched. |
 
 After this step, check two things:
@@ -239,4 +239,6 @@ The reference build writes `build/sloop-smk37.fwsc` (identity `SMK-37 Pro_900`).
 - Tag a release and build with the release version. The identity becomes `SMK-37 Pro_9XY`.
 - Ship only your firmware package and your source, under GPL-3.0 like the code it comes from. Never ship stock
   firmware files or flash dumps.
+- An upstream pull request carries sources only. The maintainer builds and publishes the site (`docs/`); SMK docs
+  go at the top level (`SMK37.md`) or another unpublished place.
 - To go back to stock: [02-update-and-recovery.md](02-update-and-recovery.md), section 6.
