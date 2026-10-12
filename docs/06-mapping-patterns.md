@@ -10,8 +10,13 @@ Pad numbers in this guide are in reading order: pads 1-8 are the top row (hardwa
 bottom row (hardware pads 8..15). The hardware index is the same for hits and LEDs; see
 [01-hardware.md](01-hardware.md), 6.3. The diagrams are drawn by `tools/make_panels.py`.
 
-**The base rule:** every FM-1 control keeps a home on the SMK, so the firmware's manual still applies. The extra
-controls add to that and never take something away. A new firmware (no FM-1 manual to keep) can drop this rule.
+**The base rules:**
+
+1. **The firmware's own layout first.** Every FM-1 control keeps a home on the SMK, in the firmware's own order
+   and grouping and under its own names, so its manual still applies. The extra controls add to that and never
+   take something away. A new firmware (no FM-1 manual to keep) can drop this rule.
+2. **No doubles.** A control never repeats another control's job, unless the owner asks for it. Before giving a
+   new control a job, ask what has no direct control yet.
 
 ## Quick chooser
 
@@ -24,10 +29,12 @@ controls add to that and never take something away. A new firmware (no FM-1 manu
 | Pads | [Voices and a CHAOS pad](#pads-voices-and-a-big-gesture) | Makkuro37 | a drone or multi-voice instrument |
 | Pads | [Strum plate](#pads-strum-plate) | FoMni37 | a chord instrument |
 | Faders | [Banks with soft takeover](#faders-banks-with-soft-takeover) | Snoop37, Makkuro37, FoMni37 | per-track settings, more than four jobs |
+| Faders | [What has no direct control](#faders-what-has-no-direct-control) | | the knobs already reach every parameter on screen |
 | Wheels | [Bend and vibrato, or a macro](#wheels-bend-and-vibrato-or-a-macro) | all ports | always |
 | Knobs | [The FM-1 top row](#knobs-the-fm-1-top-row) | Snoop37, X0X37, FoMni37 | keeping the FM-1 workflow |
 | Knobs | [A page per button, eight columns](#knobs-a-page-per-button-eight-columns) | Makkuro37 | a redesign with many parameters per voice |
-| Buttons | [Printed meaning, four extras](#buttons-printed-meaning-and-four-extras) | all ports | always |
+| Buttons | [Printed meaning, four extras](#buttons-printed-meaning-and-four-extras) | Snoop37, X0X37, FoMni37 | the firmware names its buttons by function |
+| Buttons | [By row](#buttons-by-row) | | the firmware groups its buttons by row (one row of verbs, one of modes) |
 
 ## Keys: the FM-1 range in the middle
 
@@ -104,6 +111,14 @@ bank A.
 - **Used in:** Snoop37 (as above), Makkuro37 (banks FX L, FX R, LFO, PLAY, OUTPUT), FoMni37 (banks A and B).
 - **Choose:** per-track settings, or more than four things worth a fader.
 
+## Faders: what has no direct control
+
+When banks or a mixer would repeat what the knobs already do, give the faders the amounts that have no control of
+their own: a standing effect level that otherwise sits in a menu, a send, a balance between two engines. List the
+firmware's parameters, cross out what a knob or button already reaches, and offer the owner the rest.
+
+- **Choose:** the owner's rule is "no doubles" and the knobs cover the screen's parameters.
+
 ## Wheels: bend and vibrato, or a macro
 
 ![Wheels](../assets/panel/wheels.svg)
@@ -119,9 +134,10 @@ band around the centre.
 
 ![Knobs as the FM-1 top row](../assets/panel/knobs.svg)
 
-K1-K8 are the FM-1's top row: K1 is a virtual MASTER pot (the FM-1's pot is absolute; K1 is an encoder, so it
-steps a stored value, 24 of 1024 per detent in Snoop37), K2 SELECT, K3 ALGORITHM, K4 PRESETS, K5-K8 the screen's
-four dials in their colours. One encoder step per detent.
+K1-K8 are the FM-1's knobs: K1 is a virtual MASTER pot (the FM-1's pot is absolute; K1 is an encoder, so it
+steps a stored value, 24 of 1024 per detent in Snoop37), K2-K4 the encoders, K5-K8 the screen's four dials in
+their colours. One encoder step per detent. Keep the order the firmware's screen uses: SLOOP shows SELECT,
+ALGORITHM, PRESETS (K2, K3, K4); a firmware that shows SELECT, PRESETS, ALGORITHM keeps that order.
 
 - **Used in:** Snoop37, X0X37, FoMni37.
 - **Choose:** keeping the FM-1 workflow. Matching knob caps make it obvious.
@@ -144,7 +160,16 @@ eight columns in the knobs' order, so knob i always means column i.
 The FM-1's 14 buttons keep their jobs on the SMK button that means the same: PATCH = HOME, CHORD = ENV,
 NOTE REPEAT = LFO, SCALE = SEL, PARA = EDIT, GLOBE = GLO, BT = SAVE, SEQ PLAY = PLAY, SEQ REC = REC, OCTAVE-/+ =
 OCT-/+. The four extras: KNOB BANK and FADER BANK for banks or pins, `<` `>` for pages (never tempo). Full table:
-[04-controls-mapping.md](04-controls-mapping.md).
+[04-controls-mapping.md](04-controls-mapping.md). Use the firmware's own button names in its docs (SLOOP calls
+SEL what Felucca calls SCL).
+
+## Buttons: by row
+
+The FM-1 has two rows of six buttons; the SMK's grid is two rows of six too. When a firmware groups by row (for
+example one row of actions, one of modes), keep its rows: FM-1 top row to SMK top row, bottom to bottom, left to
+right. The printed names then no longer match, so the screen and the controls table say what each button does.
+
+- **Choose:** the firmware's manual explains its buttons by row rather than by name.
 
 ## Screen and UX rules
 
@@ -155,7 +180,8 @@ These are the owner's rules from the ports so far. Keep them unless the owner sa
 2. **Touch, then see.** The screen shows what you touch first: the value next to the thing it changes, and a
    short hint line saying what the control does.
 3. **Same colour, same place.** A colour means the same thing on the screen, the pads and the knob caps; the
-   screen's layout follows the panel's.
+   screen's layout follows the panel's. A firmware whose screen maps the FM-1's panel (for example its knobs as a
+   2x2 block) gets a map of the SMK's panel instead: eight knobs in one row, in the same order.
 4. **No hidden modes.** Every state is visible (an LED, a header, a colour). A held button only lends something
    while it is held.
 5. **Play first.** Sound on power-on, few menus, nothing that needs the manual to make a noise.
