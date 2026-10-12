@@ -9,24 +9,24 @@ and to develop for both boards from one source.
 [Agent playbook](AGENTS.md) · [Mapping patterns](docs/06-mapping-patterns.md) ·
 [Setup file](smk37-port.yaml) · [Develop for both](docs/07-develop-for-both.md) · [Pitfalls](docs/08-pitfalls.md) · by **genkigenki**
 
-## Port it with Claude in 6 steps
+## Steps to migrate
 
-1. **Clone** the firmware you want and this kit side by side, then start `claude` in that folder.
-2. **Paste the prompt:**
+1. **Start `claude`** in an empty folder and paste the prompt. It clones the firmware and this kit:
    ```text
-   Port <firmware> to the SMK-37 Pro. Follow fm1-to-smk37/AGENTS.md step by step.
+   Clone <firmware repo> and github.com/genkigenki/fm1-to-smk37, then port the firmware to the
+   SMK-37 Pro. Follow fm1-to-smk37/AGENTS.md step by step.
    Ask me the setup questions first. Keep the FM-1 build byte-identical.
    Never write the protected flash ranges. Ask me before anything touches the keyboard.
    ```
-3. **Answer the questions.** What should the 16 pads, 4 faders, 10 outer keys, wheels and knobs do? Claude
+2. **Answer the questions.** What should the 16 pads, 4 faders, 10 outer keys, wheels and knobs do? Claude
    writes your answers into [`smk37-port.yaml`](smk37-port.yaml); the [mapping patterns](docs/06-mapping-patterns.md)
    and the [example](examples/) show the options.
-4. **Let it build.** Claude works through [`AGENTS.md`](AGENTS.md): baseline build, the `smk37-board` patch series,
+3. **Let it build.** Claude works through [`AGENTS.md`](AGENTS.md): baseline build, the `smk37-board` patch series,
    storage, controls, both builds, tests. It stops after each area, so you can check what it did. The FM-1 build
    stays byte-identical.
-5. **You do the hardware.** Full flash backup first, then install, play, and tell Claude what works and what
+4. **You do the hardware.** Full flash backup first, then install, play, and tell Claude what works and what
    doesn't (or paste the serial console). It fixes, rebuilds, you install again.
-6. **Ship it.** Your own release, a pull request to the original firmware (everything sits behind
+5. **Ship it.** Your own release, a pull request to the original firmware (everything sits behind
    `BOARD_SMK37`), or both.
 
 Any other coding agent that can read `AGENTS.md` and run a shell works too. At your own risk, as always.
