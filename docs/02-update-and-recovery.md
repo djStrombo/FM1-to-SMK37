@@ -1,8 +1,8 @@
 # 02: Update, backup, recovery and return to stock
 
-The SMK-37 Pro and the FM-1 share the update machinery: the same update library in the app, the same update
+The SMK-37 and the FM-1 share the update machinery: the same update library in the app, the same update
 loader (`ota.bin`, byte-identical), the same second-stage bootloader and the same mask-ROM bootloader. Everything
-Felucca and SLOOP do on the FM-1 works on the SMK-37 Pro once a handful of names and sizes are adjusted.
+Felucca and SLOOP do on the FM-1 works on the SMK-37 once a handful of names and sizes are adjusted.
 
 ## 1. How an update runs
 
@@ -35,7 +35,7 @@ F0  pack7( 00 59  cmd  len(3 bytes, LE)  body  checksum )  F7
 | Message | Bytes (on the wire) | Notes |
 |---|---|---|
 | Identity query | `F0 00 32 45 00 00 00 40 7F F7` | Reply: cmd `0x11`, 27-byte zero-padded identity text |
-| Enter upgrade | `F0 22 24 35 7F F7` | Same command on FM-1 and SMK-37 Pro |
+| Enter upgrade | `F0 22 24 35 7F F7` | Same command on FM-1 and SMK-37 |
 | Read request (device to host) | cmd `0x30`: flags, address (4 bytes), length (3 bytes) | The device pulls the package. The host answers with cmd `0x30` carrying the same address and the data. |
 | Handshake | the device reads 8 bytes at `0xE0000000` (check step) and `0xF0000000` (write step) | The host answers `success\0` |
 | UBOOT soft key | `F0 22 24 35 7D F7` | Understood by the Felucca/SLOOP update loader and app, **not** by the stock app. Restarts the chip into the mask-ROM bootloader. |
@@ -104,7 +104,7 @@ You need:
 
 ### 3.1 Method A: before anything is installed (preferred)
 
-1. Connect the SMK-37 Pro over USB and close every other program that uses its MIDI port.
+1. Connect the SMK-37 over USB and close every other program that uses its MIDI port.
 2. Run **only the check step** with the custom package: identity query, enter upgrade, serve the reads. The stock
    app accepts the package and resets into the custom update loader. Its identity is now `ota-SMK-37 Pro_9xx`.
    Nothing in the app area has been rewritten at this point.
@@ -187,7 +187,7 @@ python3 jluboottool.py --device <device> --chip wl82 "read 0x4000 0x99000 check.
 
 ## 6. Return to stock
 
-1. Get the official SMK-37 Pro firmware package from M-Vave. The community repository
+1. Get the official firmware package for your model from M-Vave. The community repository
    [smk-37-pro-docs](https://github.com/jonathaslacerda/smk-37-pro-docs) keeps a history of the stock versions.
 2. Install it the same way as any package:
    - with M-Vave's own updater, or

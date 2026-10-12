@@ -1,7 +1,8 @@
-# 01: SMK-37 Pro hardware map (compared with the FM-1)
+# 01: SMK-37 hardware map (compared with the FM-1)
 
-This is the datasheet the port needs. Each section lists the SMK-37 Pro facts, how they differ from the FM-1,
-and what a port must do.
+This is the datasheet the port needs. The SMK-37 Pro, SMK-37 Elite and MKE-P37 (and the Donner Starrykey 37 Play)
+share this hardware and run the same firmware (one package per model name). Each section lists the SMK-37 facts,
+how they differ from the FM-1, and what a port must do.
 
 Status tags:
 
@@ -18,7 +19,7 @@ Where the stock firmware uses numeric pin ids, PA0 = 0x00, PB0 = 0x10, PC0 = 0x2
 
 ## 1. SoC, boot and memory
 
-| Item | SMK-37 Pro | FM-1 | Status |
+| Item | SMK-37 | FM-1 | Status |
 |---|---|---|---|
 | SoC | JieLi AC791N (WL82 family), pi32v2 core | same | analysis |
 | External flash | 1 MiB SPI NOR, JEDEC id **0xEB6014** on the tested unit | 1 MiB, 0x856014 | **verified** |
@@ -91,7 +92,7 @@ VM so that cleaning them up can never reach BTIF or USRTRIM).
 
 ## 3. Display
 
-| Item | SMK-37 Pro | FM-1 | Status |
+| Item | SMK-37 | FM-1 | Status |
 |---|---|---|---|
 | Controller | ST7789V, IPS panel | ST7789-class | **verified** |
 | Resolution | 240 x 240, no window offset | 240 x 240 (FM-1 init sets a row offset) | **verified** |
@@ -131,7 +132,7 @@ with.
 
 ## 4. RGB pad LEDs
 
-| Item | SMK-37 Pro | Status |
+| Item | SMK-37 | Status |
 |---|---|---|
 | LEDs | 16 WS2812-class RGB LEDs under the pads, one data line | **verified** |
 | Data pin | **PC10** = SPI1 MOSI in **group B** (`IOMAP_CON1` bit 4 = 1). PC9 (group B clock) is left alone and stays an analog input. | **verified** |
@@ -160,7 +161,7 @@ frame when a colour has changed. Keep PC10 as a low output between frames, so th
 
 ### 5.1 Shift registers and return lines
 
-| Signal | SMK-37 Pro | FM-1 | Status |
+| Signal | SMK-37 | FM-1 | Status |
 |---|---|---|---|
 | Column drivers | **4 x 74HC595** (32 bits), shifted by **SPI2 group C**: CLK PA3, MOSI PA4 (`IOMAP_CON1` bits 17..16 = `10`) | 2 x 74HC595, bit-banged on PA3/PA4 | **verified** |
 | Latch | **PA1**, pulse high after each shift | PA1 | **verified** |
@@ -168,7 +169,7 @@ frame when a colour has changed. Keep PC10 as a low output between frames, so th
 | Return lines (rows 0..7) | **PA2, PA5, PA6, PA7, PA9, PH6, PH8, PH9**, inputs with pull-ups, low = contact closed | PA0, PA5..PA8, PB7 | **verified** |
 | SPI2 registers | `0x11E00` CON, `+4` BAUD, `+0xC` DMA address, `+0x10` DMA count. Setup: CON `0x4020` (master, transmit), BAUD 5, then enable bit 0 | | **verified** |
 
-PH6, PH8, PH9 and PA9 are LED or MIDI pins on the FM-1. On the SMK-37 Pro they are matrix inputs. **Driving them
+PH6, PH8, PH9 and PA9 are LED or MIDI pins on the FM-1. On the SMK-37 they are matrix inputs. **Driving them
 as FM-1 outputs shorts them against the matrix. Remove the FM-1 LED and MIDI-IN code paths for these pins.**
 
 The 32-bit word goes out as 4 bytes by DMA (little-endian in memory):
@@ -296,7 +297,7 @@ Status: **verified** for the LEDs the reference port drives, analysis for the re
 
 ### 6.1 ADC and muxes
 
-| Item | SMK-37 Pro | FM-1 | Status |
+| Item | SMK-37 | FM-1 | Status |
 |---|---|---|---|
 | ADC channels | **ch1 = PA8** (mux A), **ch8 = PC9** (mux B), **ch2 = PA10** (mux C) | ch3 PB1 (battery), ch4 PB6 (MASTER pot) | **verified** |
 | Muxes | 3 x 8:1, all three share one 3-bit address = **bits 5..3 of the 595 word** | none | **verified** |
@@ -377,7 +378,7 @@ seen. It uses a dead band of about 12 counts around the centre.
 
 ## 7. Power
 
-| Item | SMK-37 Pro | Status |
+| Item | SMK-37 | Status |
 |---|---|---|
 | Power switch | a hard slide switch. There is **no soft power latch**, so the firmware does not need to drive any pin to stay on. | analysis |
 | Charger status | **PB1** input, low = charging. | analysis |
@@ -394,7 +395,7 @@ change to the audio driver, and the synth engines run unchanged. Status: **verif
 
 ## 9. MIDI
 
-| Item | SMK-37 Pro | FM-1 | Status |
+| Item | SMK-37 | FM-1 | Status |
 |---|---|---|---|
 | TRS jack | **MIDI OUT** | MIDI IN | analysis |
 | UART | UART1 (`0x12100`), **transmit only** | UART1, receive on PH8 | analysis |
@@ -402,7 +403,7 @@ change to the audio driver, and the synth engines run unchanged. Status: **verif
 | Baud | 31250, from the 48 MHz UART clock (BAUD register 383) | same formula | analysis |
 | USB MIDI | class-compliant, as on the FM-1 | | **verified** |
 
-**Disable the FM-1's TRS MIDI IN driver.** PH8 is a key-matrix row on the SMK-37 Pro. The reference port forces
+**Disable the FM-1's TRS MIDI IN driver.** PH8 is a key-matrix row on the SMK-37. The reference port forces
 the UART option off for this board and fails the build if it is switched on. A MIDI OUT driver on PC7 is not
 written yet.
 
@@ -416,7 +417,7 @@ written yet.
 | Mask-ROM bootloader | `WL82 UBOOT1.00`, 4C4A:8057, USB mass storage (**verified**) | same |
 
 Felucca-family firmware brings its own USB descriptors (VID/PID, audio, MIDI, serial). They work unchanged on the
-SMK-37 Pro (**verified**). Host tools that look for the device by port name must also accept names containing
+SMK-37 (**verified**). Host tools that look for the device by port name must also accept names containing
 `SMK`.
 
 ## 11. Identity and update
@@ -433,7 +434,7 @@ Details are in [02-update-and-recovery.md](02-update-and-recovery.md).
 
 ## 12. Summary: what a port changes
 
-| Area | FM-1 code | SMK-37 Pro change |
+| Area | FM-1 code | SMK-37 change |
 |---|---|---|
 | Board switch | none | one compile-time flag (`BOARD_SMK37`) so that the FM-1 build stays byte-identical |
 | Input | 2 x 595 bit-banged, 11 x 6 matrix, 27 keys, 7 encoders, 4 LED lines | new input HAL: SPI2 DMA, 16 x 8 matrix, 37 velocity keys, 18 buttons, 8 encoders, 19 LEDs, muxed ADC with pads, faders, wheels |

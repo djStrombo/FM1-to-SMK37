@@ -1,8 +1,8 @@
-# FM-1 to SMK-37: run your FM-1 firmware on the SMK-37 Pro
+# FM-1 to SMK-37: run your FM-1 firmware on the SMK-37
 
 ![FM-1 firmware to SMK-37](assets/hero.png)
 
-A kit to migrate open M-Vave FM-1 firmwares to the M-Vave SMK-37 Pro with a coding agent such as Claude Code,
+A kit to migrate open M-Vave FM-1 firmwares to the M-Vave SMK-37 with a coding agent such as Claude Code,
 and to develop for both boards from one source.
 
 [Website](https://genkigenki.github.io/smk37/kit.html) ·
@@ -15,7 +15,7 @@ and to develop for both boards from one source.
    It clones the firmware and this kit and sets up the toolchain; you approve each command:
    ```text
    Clone <firmware repo> and github.com/genkigenki/fm1-to-smk37, then port the firmware to the
-   SMK-37 Pro. Follow fm1-to-smk37/AGENTS.md step by step.
+   SMK-37. Follow fm1-to-smk37/AGENTS.md step by step.
    Ask me the setup questions first. Keep the FM-1 build byte-identical.
    Never write the protected flash ranges. Ask me before you flash the SMK-37.
    ```
@@ -40,7 +40,7 @@ Any other coding agent that can read `AGENTS.md` and run a shell works too. At y
 | [Snoop37](https://github.com/genkigenki/Snoop37) | [SLOOP](https://github.com/isod89/sloop-fm1) | pads in track colours, pad sound picker, fader banks, outer-key drums. The reference port. | [isod89/sloop-fm1#112](https://github.com/isod89/sloop-fm1/pull/112) |
 | [X0X37](https://github.com/genkigenki/X0X37) | [fm1-x0x](https://github.com/charlesvestal/fm1-x0x) | pads as a 16-step grid | [charlesvestal/fm1-x0x#13](https://github.com/charlesvestal/fm1-x0x/pull/13) |
 | [FoMni37](https://github.com/genkigenki/FoMni37) | [fm1-fomni](https://github.com/charlesvestal/fm1-fomni) | pads as a strum plate, keybed holds the chords | [charlesvestal/fm1-fomni#2](https://github.com/charlesvestal/fm1-fomni/pull/2) |
-| Felucca | [Felucca](https://github.com/hugelton/Felucca) | the SMK-37 Pro as a build target | [hugelton/Felucca#237](https://github.com/hugelton/Felucca/pull/237) |
+| Felucca | [Felucca](https://github.com/hugelton/Felucca) | the SMK-37 as a build target | [hugelton/Felucca#237](https://github.com/hugelton/Felucca/pull/237) |
 
 All of them install from the browser at **[genkigenki.github.io/smk37](https://genkigenki.github.io/smk37/)**.
 
@@ -50,18 +50,18 @@ The FM-1 has a lively open firmware scene. It started with
 [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita / Hügelton Instruments, and forks such as
 [SLOOP](https://github.com/isod89/sloop-fm1), [sloopDX](https://github.com/zvenson/dxsloop),
 [X0X](https://github.com/charlesvestal/fm1-x0x), [FoMni-1](https://github.com/charlesvestal/fm1-fomni) and
-[Melodee](https://github.com/keremimo/melodee) followed. The SMK-37 Pro is a 37-key controller with 16 RGB pads,
+[Melodee](https://github.com/keremimo/melodee) followed. The SMK-37 is a 37-key controller with 16 RGB pads,
 8 encoders, 4 faders, pitch and mod wheels, a colour screen and a built-in synth. Inside it uses **the same JieLi
 AC791N (WL82) chip** as the FM-1, the same second-stage bootloader, the same update loader and the same chip key.
 Only the panel wiring is different.
 
-So an FM-1 firmware can run on the SMK-37 Pro once you replace its board layer: the keyboard matrix, the
+So an FM-1 firmware can run on the SMK-37 once you replace its board layer: the keyboard matrix, the
 analog inputs, the display pins, the pad LEDs and the flash map. This guide documents that layer and shows how to
 carry it over to any Felucca-family firmware.
 
 ## Reference implementation
 
-[**Snoop37**](https://github.com/genkigenki/Snoop37) is a SLOOP-based firmware for the SMK-37 Pro, and it is
+[**Snoop37**](https://github.com/genkigenki/Snoop37) is a SLOOP-based firmware for the SMK-37, and it is
 the working reference for this guide.
 
 - `main` holds the full firmware: SLOOP plus the SMK board layer plus Snoop37's own additions (boot intro,
@@ -86,7 +86,7 @@ storage layout takes a day. Most of that time goes into the controls mapping, no
 
 ## Safety first
 
-The SMK-37 Pro has 1 MiB of flash. Some of it is **unique to your unit** and cannot be downloaded again:
+The SMK-37 has 1 MiB of flash. Some of it is **unique to your unit** and cannot be downloaded again:
 
 | Flash range | Contents | Rule |
 |---|---|---|
@@ -113,7 +113,7 @@ flash ranges with compile-time checks, plus a second guard in the flash driver i
 This path was verified on a real unit. The full procedure, recovery and rollback are in
 [docs/02-update-and-recovery.md](docs/02-update-and-recovery.md).
 
-**Rollback.** The stock SMK-37 Pro update package (`.fwsc`) can be installed again at any time through
+**Rollback.** The stock update package for your model (`.fwsc`) can be installed again at any time through
 M-Vave's own updater, or through the SLOOP-style installer once it understands the SMK's 36-block package
 container. A custom firmware that follows this guide never touches the ranges above, so the stock firmware comes
 back with its calibration intact.
@@ -125,17 +125,17 @@ calibration.
 
 | File | What |
 |---|---|
-| [docs/01-hardware.md](docs/01-hardware.md) | The SMK-37 Pro hardware map compared with the FM-1: SoC, flash, display, pad LEDs, key matrix, velocity, buttons, encoders, ADC muxes, faders, wheels, pedal, battery, audio, MIDI out, USB |
+| [docs/01-hardware.md](docs/01-hardware.md) | The SMK-37 hardware map compared with the FM-1: SoC, flash, display, pad LEDs, key matrix, velocity, buttons, encoders, ADC muxes, faders, wheels, pedal, battery, audio, MIDI out, USB |
 | [docs/02-update-and-recovery.md](docs/02-update-and-recovery.md) | Update protocol, package format, full flash backup, install, recovery, return to stock |
 | [docs/03-porting-steps.md](docs/03-porting-steps.md) | Step by step: source, patch series, conflicts, UI mapping, build, test on the device, install, rollback |
-| [docs/04-controls-mapping.md](docs/04-controls-mapping.md) | FM-1 to SLOOP to SMK-37 Pro to Snoop37 control tables |
+| [docs/04-controls-mapping.md](docs/04-controls-mapping.md) | FM-1 to SLOOP to SMK-37 to Snoop37 control tables |
 | [docs/05-reverse-engineering.md](docs/05-reverse-engineering.md) | How the facts were obtained, and how to reproduce them with public tools |
 | [docs/06-mapping-patterns.md](docs/06-mapping-patterns.md) | Mapping patterns that worked: pads, faders, outer keys, wheels, knobs, buttons, screen rules |
 | [docs/07-develop-for-both.md](docs/07-develop-for-both.md) | One source for both boards: capability layer, build and test matrix |
 | [docs/08-pitfalls.md](docs/08-pitfalls.md) | What went wrong in earlier ports, and the fix |
 | [AGENTS.md](AGENTS.md) | The agent playbook: questions, then baseline to release, with hard rules |
 | [smk37-port.yaml](smk37-port.yaml) | The setup file: every mapping decision for one port; filled examples in [examples/](examples/) |
-| [assets/smk37-panel.png](assets/smk37-panel.png) | The SMK-37 Pro panel map (SVGs in [assets/panel/](assets/panel/), drawn by `tools/make_panels.py`) |
+| [assets/smk37-panel.png](assets/smk37-panel.png) | The SMK-37 panel map (SVGs in [assets/panel/](assets/panel/), drawn by `tools/make_panels.py`) |
 
 Each fact in the hardware map is marked as either **verified** (checked on a real SMK-37 Pro) or **analysis**
 (read from the stock firmware but not yet confirmed on hardware).
@@ -153,7 +153,7 @@ This guide builds on the work of many people:
 - [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita (@kurogedelic) / Hügelton Instruments: the
   open FM-1 firmware with its HAL, update loader and installer.
 - [SLOOP](https://github.com/isod89/sloop-fm1) by isod89: the groovebox firmware the reference port is based on.
-- SMK-37 Pro community documentation:
+- SMK-37 community documentation:
   [smk-37-pro-docs](https://github.com/jonathaslacerda/smk-37-pro-docs) by jonathaslacerda (manuals and stock
   firmware history) and [smk37-firmware-custom-mod](https://github.com/amalahama/smk37-firmware-custom-mod) by
   amalahama.

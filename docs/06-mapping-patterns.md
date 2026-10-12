@@ -1,10 +1,10 @@
 # 06: Mapping patterns
 
-The SMK-37 Pro has more controls than the FM-1: ten more keys, 16 RGB pads, 4 faders, 2 wheels and 4 more
+The SMK-37 has more controls than the FM-1: ten more keys, 16 RGB pads, 4 faders, 2 wheels and 4 more
 buttons. These patterns put them to work. Each one ran on a real unit in at least one port. Pick per control
 group, write the choice into [`smk37-port.yaml`](../smk37-port.yaml), then implement it.
 
-![The SMK-37 Pro panel](../assets/smk37-panel.png)
+![The SMK-37 panel](../assets/smk37-panel.png)
 
 Pad numbers in this guide are in reading order: pads 1-8 are the top row (hardware pads 0..7), pads 9-16 the
 bottom row (hardware pads 8..15). The hardware index is the same for hits and LEDs; see

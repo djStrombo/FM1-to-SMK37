@@ -1,6 +1,6 @@
 # AGENTS.md: porting playbook
 
-The ordered checklist for porting an FM-1 firmware (Felucca family) to the M-Vave SMK-37 Pro. Written for a
+The ordered checklist for porting an FM-1 firmware (Felucca family) to the M-Vave SMK-37. Written for a
 coding agent working with the owner of the keyboard: the agent writes code, the owner decides and handles the
 hardware. Background is in [docs/](docs/). This file says what to do, in which order, and how to check it.
 

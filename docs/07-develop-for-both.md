@@ -1,6 +1,6 @@
 # 07: Develop for both boards
 
-A port is easy to keep alive when one source tree builds the FM-1 and the SMK-37 Pro, and new features land on
+A port is easy to keep alive when one source tree builds the FM-1 and the SMK-37, and new features land on
 both. This is how the ports were kept that way. Use it for a new firmware too: write it for the SMK, keep the
 FM-1 working.
 
@@ -19,7 +19,7 @@ Write features against what a board **has**, not against which board it is. A fe
 enough:
 
 ```c
-/* board_caps.h: one place that says what the panel has (values for the SMK-37 Pro / the FM-1) */
+/* board_caps.h: one place that says what the panel has (values for the SMK-37 / the FM-1) */
 #if BOARD_SMK37
 #define CAP_KEYS        37    /* velocity keys; the FM-1 range is keys 5..31 */
 #define CAP_PADS        16    /* RGB pads; hardware 0..7 top row, 8..15 bottom */
@@ -43,7 +43,7 @@ int  caps_wheel(int i);                     /* calibrated -512..511 around the c
 
 Then each feature has an FM-1 fallback in the same place:
 
-| Feature | SMK-37 Pro | FM-1 fallback |
+| Feature | SMK-37 | FM-1 fallback |
 |---|---|---|
 | Step grid | 16 pads in track colours | the white keys' LEDs, as before |
 | Sound picker | pads + screen | the screen list, scrolled with PRESETS |

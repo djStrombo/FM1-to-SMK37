@@ -1,6 +1,6 @@
 # 03: Porting a firmware, step by step
 
-This walkthrough ports a Felucca-family FM-1 firmware to the SMK-37 Pro. The board layer comes in two forms:
+This walkthrough ports a Felucca-family FM-1 firmware to the SMK-37. The board layer comes in two forms:
 
 - **SLOOP forks:** the patch series from [Snoop37](https://github.com/genkigenki/Snoop37), branch `smk37-board`,
   written against SLOOP 2.5.
@@ -39,7 +39,7 @@ Both touch the same files; file names below are SLOOP's, Felucca's are mostly th
   git -C fw-AC79_AIoT_SDK sparse-checkout set cpu/wl82/tools
   ```
 
-- An SMK-37 Pro with a **full flash backup** ([02-update-and-recovery.md](02-update-and-recovery.md),
+- An SMK-37 with a **full flash backup** ([02-update-and-recovery.md](02-update-and-recovery.md),
   section 3).
 
 Line endings: Git for Windows converts to CRLF by default, and patches and build scripts break. Clone with
@@ -166,10 +166,10 @@ BOARD=smk37 sh build.sh                                   # the SMK build compil
 
 ## 5. Map the UI
 
-The FM-1 has 27 note keys, 14 buttons, 7 encoders and a MASTER pot. The SMK-37 Pro has far more. The series maps
+The FM-1 has 27 note keys, 14 buttons, 7 encoders and a MASTER pot. The SMK-37 has far more. The series maps
 it like this. Full tables are in [04-controls-mapping.md](04-controls-mapping.md).
 
-| SMK-37 Pro | Becomes | How |
+| SMK-37 | Becomes | How |
 |---|---|---|
 | keys 5..31 (F3..G5, the middle 27) | the FM-1's 27 note keys, with velocity | `smk_input.h` sets note bits 0..26 from keybed keys 5..31 |
 | keys 0..4 and 32..36 (C3..E3, G#5..C6) | extra notes on synth tracks, extra drum sounds on the drum track | a separate event queue (`smk_extkey_take`), handled in the UI |
