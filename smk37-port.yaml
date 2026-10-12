@@ -8,18 +8,23 @@ firmware:
   name: ""                  # the port's name, shown on the boot screen and in the installer (e.g. Snoop37)
   upstream: ""              # the FM-1 firmware's repository URL; empty for a new firmware
   base: ""                  # the release or commit the port starts from
-  family: sloop             # sloop | felucca | other  (sets the effort, see README "What can be ported")
+  family: sloop             # sloop | felucca | other  (AGENTS.md step 1: git merge-base)
+  board_layer: snoop37      # snoop37 (smk37-board series, SLOOP forks) | felucca (smk37 commit, Felucca forks) | by_hand
+  lost_on_smk: []           # features the SMK cannot keep, told to the owner, e.g. [TRS MIDI IN / clock in]
   priorities:               # the features that must feel right on the SMK, most important first
     - ""
 
 delivery:
   mode: fork                # fork (own repo and release) | upstream (one PR behind BOARD_SMK37) | both
   usb_name: ""              # the USB / MIDI device name; every installer's port filter must include it
-  data_family: ""           # flash owner tag / data family, unique to this firmware
+  data_family: ""           # store owner tag (SMK_DATA_FAMILY in build.py, 1..7 of A-Z 0-9). Own family: other
+                            # firmwares' data is cleared on a switch (and this one's on a switch back). The upstream
+                            # family: data survives switching between fork and upstream. The owner decides.
   boot_logo: ""             # fork only: the boot logo or intro; none in an upstream PR
   credit: ""                # fork only: the credit line on the power-on screen
 
-models:                     # one package per model, each with its own identity (MODEL=pro|elite|mke)
+models:                     # one package per model (MODEL=pro|elite|mke); the Felucca layer builds pro only,
+                            # see AGENTS.md step 7 to add the others
   - pro                     # SMK-37 Pro; also used for Starrykey 37 Play (its name is too long for a package)
   # - elite                 # SMK-37 Elite
   # - mke                   # MKE-P37
@@ -64,8 +69,12 @@ wheels:
     detail: ""              # e.g. "10 Hz, up to +-1 semitone" or the macro it drives
   calibration: auto         # auto: centre at power-on, range widens as seen, dead band
 
+rules:
+  no_doubles: true          # no control repeats another one's job unless listed here
+  doubles_allowed: []
+
 knobs:
-  layout: fm1               # fm1: K1 MASTER, K2 SELECT, K3 ALGORITHM, K4 PRESETS, K5-K8 KNOB 1-4 | custom
+  layout: fm1               # fm1: K1 MASTER, K2-K4 the encoders in the firmware's own screen order, K5-K8 KNOB 1-4 | custom
   K1: master                # a virtual MASTER pot (the FM-1's pot is absolute; K1 is an encoder)
   K2: select
   K3: algorithm
@@ -77,8 +86,9 @@ knobs:
   step: detent              # one encoder step per detent
   pages: {}                 # optional: button -> its page's eight knob columns, e.g. CHORD: [attack 1, ...]
 
-buttons:                    # the FM-1's 14 buttons by printed name (docs/04-controls-mapping.md); change only on purpose
-  map: printed
+buttons:                    # the FM-1's 14 buttons (docs/04-controls-mapping.md, docs/06 "Buttons")
+  map: printed              # printed (by name) | rows (the firmware groups by row) | custom
+  names: firmware           # the firmware's own button names in its docs (e.g. SEL or SCL)
   extra:                    # the four buttons the FM-1 does not have
     KNOB BANK: ""
     FADER BANK: ""

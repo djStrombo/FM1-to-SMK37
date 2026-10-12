@@ -6,6 +6,8 @@ firmware:
   upstream: https://github.com/isod89/sloop-fm1
   base: SLOOP 2.5
   family: sloop
+  board_layer: snoop37
+  lost_on_smk: [TRS MIDI IN]
   priorities:
     - the SLOOP workflow unchanged, so the SLOOP manual still applies
     - step sequencing on the pads, in the screen's track colours
