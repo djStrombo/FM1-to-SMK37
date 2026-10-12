@@ -1,6 +1,50 @@
-# FM-1 to SMK-37 Pro: porting custom firmware
+# FM-1 to SMK-37: run your FM-1 firmware on the SMK-37 Pro
 
-A guide to running M-Vave FM-1 custom firmware on the **M-Vave SMK-37 Pro** keyboard.
+![FM-1 firmware to SMK-37](assets/hero.png)
+
+A porting kit that lets a coding agent such as Claude Code move an open M-Vave FM-1 firmware onto the
+M-Vave SMK-37 Pro, while you keep your hands on the hardware.
+
+[Install the ports](https://genkigenki.github.io/smk37/) ·
+[Agent playbook](AGENTS.md) · [Mapping patterns](docs/06-mapping-patterns.md) ·
+[Setup file](smk37-port.yaml) · [Pitfalls](docs/08-pitfalls.md) · by **genkigenki**
+
+## Port it with Claude in 6 steps
+
+1. **Clone** the firmware you want and this kit side by side, then start `claude` in that folder.
+2. **Paste the prompt:**
+   ```text
+   Port <firmware> to the SMK-37 Pro. Follow fm1-to-smk37/AGENTS.md step by step.
+   Ask me the setup questions first. Keep the FM-1 build byte-identical.
+   Never write the protected flash ranges. Ask me before anything touches the keyboard.
+   ```
+3. **Answer the questions.** What should the 16 pads, 4 faders, 10 outer keys, wheels and knobs do? Claude
+   writes your answers into [`smk37-port.yaml`](smk37-port.yaml); the [mapping patterns](docs/06-mapping-patterns.md)
+   and the [examples](examples/) give you ideas. That's the fun part.
+4. **Let it build.** Claude works through [`AGENTS.md`](AGENTS.md): baseline build, the `smk37-board` patch series,
+   storage, controls, both builds, tests. It stops after each area, so you can check what it did. The FM-1 build
+   stays byte-identical.
+5. **You do the hardware.** Full flash backup first, then install, play, and tell Claude what works and what
+   doesn't (or paste the serial console). It fixes, rebuilds, you install again.
+6. **Ship it.** Your own release, a pull request to the original firmware (everything sits behind
+   `BOARD_SMK37`), or both.
+
+Any other coding agent that can read `AGENTS.md` and run a shell works too. At your own risk, as always.
+
+## Already ported this way
+
+| Port | From | What the SMK adds | Upstream |
+|---|---|---|---|
+| [Makkuro37](https://github.com/genkigenki/Makkuro37) | new firmware | pads gate eight drone voices, a CHAOS pad, fader banks | |
+| [Snoop37](https://github.com/genkigenki/Snoop37) | [SLOOP](https://github.com/isod89/sloop-fm1) | pads in track colours, pad sound picker, fader banks, outer-key drums. The reference port. | [isod89/sloop-fm1#112](https://github.com/isod89/sloop-fm1/pull/112) |
+| [X0X37](https://github.com/genkigenki/X0X37) | [fm1-x0x](https://github.com/charlesvestal/fm1-x0x) | pads as a 16-step grid | [charlesvestal/fm1-x0x#13](https://github.com/charlesvestal/fm1-x0x/pull/13) |
+| [FoMni37](https://github.com/genkigenki/FoMni37) | [fm1-fomni](https://github.com/charlesvestal/fm1-fomni) | pads as a strum plate, keybed holds the chords | [charlesvestal/fm1-fomni#2](https://github.com/charlesvestal/fm1-fomni/pull/2) |
+| Felucca | [Felucca](https://github.com/hugelton/Felucca) | the SMK-37 Pro as a build target | [hugelton/Felucca#237](https://github.com/hugelton/Felucca/pull/237) |
+
+All of them install from the browser at **[genkigenki.github.io/smk37](https://genkigenki.github.io/smk37/)**.
+A new firmware, Vector37, is in progress with the same method.
+
+## Why this works
 
 The FM-1 has a lively open firmware scene. It started with
 [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita / Hügelton Instruments, and forks such as
@@ -14,25 +58,6 @@ Only the panel wiring is different.
 So an FM-1 firmware can run on the SMK-37 Pro once you replace its board layer: the keyboard matrix, the
 analog inputs, the display pins, the pad LEDs and the flash map. This guide documents that layer and shows how to
 carry it over to any Felucca-family firmware.
-
-## Port it with Claude
-
-You don't need to know the chip. All ports on [the SMK37 site](https://genkigenki.github.io/smk37/) were done
-this way, with [Claude Code](https://claude.com/claude-code) doing the code and the owner doing the hardware:
-
-1. Clone the firmware you want and this kit side by side, then start `claude` in that folder.
-2. Tell it:
-   *"Port `<firmware>` to the SMK-37 Pro. Follow `fm1-to-smk37/AGENTS.md` step by step. Keep the FM-1 build
-   byte-identical. Never write the protected flash ranges. Ask me before anything touches the keyboard."*
-3. Claude works through `AGENTS.md`: baseline build, the `smk37-board` patch series, storage, controls, both
-   builds, tests. It stops after each area, so you can check what it did.
-4. You do the hardware part: the full flash backup first, then install, play, and tell Claude what works and
-   what doesn't (or paste the serial console). It fixes, rebuilds, and you install again.
-5. Tell it which controls you want where. That's the fun part and where most of the time goes.
-6. When it plays well: ask Claude to open a pull request to the original firmware. Everything sits behind
-   `BOARD_SMK37`, so the FM-1 build stays the same.
-
-Any other coding agent that can read `AGENTS.md` and run a shell works too. At your own risk, as always.
 
 ## Reference implementation
 
@@ -102,7 +127,12 @@ calibration.
 | [docs/03-porting-steps.md](docs/03-porting-steps.md) | Step by step: source, patch series, conflicts, UI mapping, build, test on the device, install, rollback |
 | [docs/04-controls-mapping.md](docs/04-controls-mapping.md) | FM-1 to SLOOP to SMK-37 Pro to Snoop37 control tables |
 | [docs/05-reverse-engineering.md](docs/05-reverse-engineering.md) | How the facts were obtained, and how to reproduce them with public tools |
-| [AGENTS.md](AGENTS.md) | A condensed checklist for carrying out a port, written to be followed step by step |
+| [docs/06-mapping-patterns.md](docs/06-mapping-patterns.md) | Mapping patterns that worked: pads, faders, outer keys, wheels, knobs, buttons, screen rules |
+| [docs/07-develop-for-both.md](docs/07-develop-for-both.md) | One source for both boards: capability layer, build and test matrix, host simulator |
+| [docs/08-pitfalls.md](docs/08-pitfalls.md) | What went wrong in earlier ports, and the fix |
+| [AGENTS.md](AGENTS.md) | The agent playbook: questions, then baseline to release, with hard rules |
+| [smk37-port.yaml](smk37-port.yaml) | The setup file: every mapping decision for one port; filled examples in [examples/](examples/) |
+| [assets/smk37-panel.png](assets/smk37-panel.png) | The SMK-37 Pro panel map (SVGs in [assets/panel/](assets/panel/), drawn by `tools/make_panels.py`) |
 
 Each fact in the hardware map is marked as either **verified** (checked on a real SMK-37 Pro) or **analysis**
 (read from the stock firmware but not yet confirmed on hardware).
