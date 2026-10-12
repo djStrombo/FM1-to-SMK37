@@ -17,7 +17,7 @@ and to develop for both boards from one source.
    Clone <firmware repo> and github.com/genkigenki/fm1-to-smk37, then port the firmware to the
    SMK-37 Pro. Follow fm1-to-smk37/AGENTS.md step by step.
    Ask me the setup questions first. Keep the FM-1 build byte-identical.
-   Never write the protected flash ranges. Ask me before anything touches the keyboard.
+   Never write the protected flash ranges. Ask me before you flash the SMK-37.
    ```
 2. **Answer the questions.** What should the 16 pads, 4 faders, 10 outer keys, wheels and knobs do? Claude
    writes your answers into [`smk37-port.yaml`](smk37-port.yaml); the [mapping patterns](docs/06-mapping-patterns.md)
