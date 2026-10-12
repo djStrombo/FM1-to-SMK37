@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Draw the SMK-37 Pro panel diagrams used by docs/06-mapping-patterns.md.
 
-    python tools/make_panels.py [OUTDIR]      (default: assets/panel)
+    python tools/make_panels.py [--bare] [OUTDIR]      (default: assets/panel)
 
-Writes one SVG per mapping pattern plus panel.svg (every control named). No dependencies.
+Writes one SVG per mapping pattern plus panel.svg (every control named). --bare: without the legend
+(for pages that set the text themselves). No dependencies.
 Positions are measured on a top-view photo of the SMK-37 Pro (1600 x 899 px, body x 30..1578, y 138..748).
 """
 import sys
@@ -42,6 +43,7 @@ def controls():
 
 
 C = controls()
+BARE = False
 
 
 def keys(fill):
@@ -140,6 +142,7 @@ def control(cid, col=None, lab=None, bright=False):
 def panel(lit=None, keyfill=None, legend=(), title=None, names=False):
     """lit: {control id: (colour, label) or colour}; keyfill: see keys(); legend: [(colour, text)]"""
     lit = lit or {}
+    legend = () if BARE else legend
     w, top = 1570, 128
     h_panel = 630
     h = h_panel + (44 * len(legend) + 20 if legend else 0) + (54 if title else 0)
@@ -305,7 +308,10 @@ def patterns():
 
 
 def main():
-    out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parent.parent / "assets" / "panel"
+    global BARE
+    args = [a for a in sys.argv[1:] if a != "--bare"]
+    BARE = len(args) < len(sys.argv) - 1
+    out = Path(args[0]) if args else Path(__file__).resolve().parent.parent / "assets" / "panel"
     out.mkdir(parents=True, exist_ok=True)
     for name, svg in patterns().items():
         (out / f"{name}.svg").write_text(svg, encoding="utf-8", newline="\n")
