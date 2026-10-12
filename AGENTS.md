@@ -41,7 +41,7 @@ Before any code, ask these questions, a few at a time, and offer the patterns fr
 into the firmware repository, fill it from the answers, show it, and get an OK.
 
 1. Which firmware, and which of its features matter most on the SMK?
-2. The 16 pads: steps, instrument / sound picker, performance (voices, strum, XY corners) or something else?
+2. The 16 pads: steps, instrument / sound picker, performance (voices, strum) or something else?
 3. The 4 faders: mixer, filter, macros, banks of these?
 4. The 10 outer keys (C3-E3, G#5-C6): extend the range, drums on a drum track, transpose, or off?
 5. Pitch wheel and mod wheel: bend and vibrato, or a performance macro? Bend range?
@@ -51,7 +51,7 @@ into the firmware repository, fill it from the answers, show it, and get an OK.
 9. Models: SMK-37 Pro, SMK-37 Elite, MKE-P37, Starrykey 37 Play (uses the Pro build)?
 10. Delivery: own fork and release, an upstream pull request, or both?
 
-Filled examples: [examples/snoop37.yaml](examples/snoop37.yaml), [examples/vector37.yaml](examples/vector37.yaml).
+Filled example: [examples/snoop37.yaml](examples/snoop37.yaml).
 
 ## 1. Baseline
 

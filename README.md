@@ -42,7 +42,6 @@ Any other coding agent that can read `AGENTS.md` and run a shell works too. At y
 | Felucca | [Felucca](https://github.com/hugelton/Felucca) | the SMK-37 Pro as a build target | [hugelton/Felucca#237](https://github.com/hugelton/Felucca/pull/237) |
 
 All of them install from the browser at **[genkigenki.github.io/smk37](https://genkigenki.github.io/smk37/)**.
-A new firmware, Vector37, is in progress with the same method.
 
 ## Why this works
 

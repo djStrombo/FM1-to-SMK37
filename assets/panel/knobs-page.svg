@@ -18,38 +18,40 @@
 <text x="162.0" y="374.5" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="18" font-weight="600" fill="#7f9bb0" text-anchor="middle">MOD</text>
 <rect x="230.0" y="156.5" width="140.0" height="131.0" rx="6" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="238.0" y="164.5" width="124.0" height="115.0" rx="2" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2.4"/>
-<text x="300.0" y="206.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="18" font-weight="600" fill="#ffb02a" text-anchor="middle">VOICE</text>
-<text x="300.0" y="230.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="18" font-weight="600" fill="#ffb02a" text-anchor="middle">K1-K8</text>
+<text x="300.0" y="206.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="18" font-weight="600" fill="#ffb02a" text-anchor="middle">ENVELOPE</text>
+<text x="300.0" y="230.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="18" font-weight="600" fill="#ffb02a" text-anchor="middle">ATTACK</text>
 <rect x="246.0" y="312.0" width="48.0" height="22.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="299.0" y="312.0" width="48.0" height="22.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
-<rect x="246.0" y="339.0" width="48.0" height="22.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
-<rect x="299.0" y="339.0" width="48.0" height="22.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
+<rect x="246.0" y="339.0" width="48.0" height="22.0" rx="3" fill="#3cf0ff" fill-opacity=".28" stroke="#3cf0ff" stroke-width="2"/>
+<text x="240.0" y="355.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="14" font-weight="600" fill="#3cf0ff" text-anchor="end">&lt;</text>
+<rect x="299.0" y="339.0" width="48.0" height="22.0" rx="3" fill="#3cf0ff" fill-opacity=".28" stroke="#3cf0ff" stroke-width="2"/>
+<text x="353.0" y="355.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="14" font-weight="600" fill="#3cf0ff" text-anchor="start">&gt;</text>
 <rect x="246.0" y="366.0" width="48.0" height="22.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="299.0" y="366.0" width="48.0" height="22.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <circle cx="453" cy="197" r="27" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2.4"/>
 <line x1="453" y1="197" x2="467" y2="179" stroke="#ffb02a" stroke-width="2.4"/>
-<text x="453.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">ATK</text>
+<text x="453.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">V1</text>
 <circle cx="547" cy="197" r="27" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2.4"/>
 <line x1="547" y1="197" x2="561" y2="179" stroke="#ffb02a" stroke-width="2.4"/>
-<text x="547.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">DEC</text>
+<text x="547.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">V2</text>
 <circle cx="641" cy="197" r="27" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2.4"/>
 <line x1="641" y1="197" x2="655" y2="179" stroke="#ffb02a" stroke-width="2.4"/>
-<text x="641.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">SUS</text>
+<text x="641.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">V3</text>
 <circle cx="735" cy="197" r="27" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2.4"/>
 <line x1="735" y1="197" x2="749" y2="179" stroke="#ffb02a" stroke-width="2.4"/>
-<text x="735.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">REL</text>
+<text x="735.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">V4</text>
 <circle cx="829" cy="197" r="27" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2.4"/>
 <line x1="829" y1="197" x2="843" y2="179" stroke="#ffb02a" stroke-width="2.4"/>
-<text x="829.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">DET</text>
+<text x="829.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">V5</text>
 <circle cx="923" cy="197" r="27" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2.4"/>
 <line x1="923" y1="197" x2="937" y2="179" stroke="#ffb02a" stroke-width="2.4"/>
-<text x="923.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">GLD</text>
+<text x="923.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">V6</text>
 <circle cx="1017" cy="197" r="27" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2.4"/>
 <line x1="1017" y1="197" x2="1031" y2="179" stroke="#ffb02a" stroke-width="2.4"/>
-<text x="1017.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">STK</text>
+<text x="1017.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">V7</text>
 <circle cx="1111" cy="197" r="27" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2.4"/>
 <line x1="1111" y1="197" x2="1125" y2="179" stroke="#ffb02a" stroke-width="2.4"/>
-<text x="1111.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">STR</text>
+<text x="1111.0" y="161.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="19" font-weight="600" fill="#ffb02a" text-anchor="middle">V8</text>
 <rect x="416.0" y="249.0" width="74.0" height="56.0" rx="5" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="510.0" y="249.0" width="74.0" height="56.0" rx="5" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="604.0" y="249.0" width="74.0" height="56.0" rx="5" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
@@ -82,7 +84,7 @@
 <rect x="1261.0" y="341.5" width="48.0" height="21.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="1318.0" y="341.5" width="48.0" height="21.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="1376.0" y="341.5" width="48.0" height="21.0" rx="3" fill="#ffb02a" fill-opacity=".28" stroke="#ffb02a" stroke-width="2"/>
-<text x="1400.0" y="335.5" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="14" font-weight="600" fill="#ffb02a" text-anchor="middle">HOLD</text>
+<text x="1400.0" y="335.5" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="14" font-weight="600" fill="#ffb02a" text-anchor="middle">ENVELOPE</text>
 <rect x="1433.0" y="341.5" width="48.0" height="21.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="1490.0" y="341.5" width="48.0" height="21.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="1203.0" y="369.5" width="48.0" height="21.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
@@ -144,7 +146,7 @@
 <rect x="1379.8" y="462" width="40" height="170" rx="3" fill="#04060c"/>
 <rect x="1379.8" y="462.0" width="40.0" height="170.0" rx="3" fill="#0a1220" stroke="#2a3a52" stroke-width="1.6"/>
 <rect x="50" y="772" width="28" height="28" rx="5" fill="#ffb02a" fill-opacity=".45" stroke="#ffb02a" stroke-width="2"/>
-<text x="94.0" y="794.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="26" font-weight="500" fill="#dff8ff" text-anchor="start">hold a button: the 8 knobs get its 8 jobs</text>
+<text x="94.0" y="794.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="26" font-weight="500" fill="#dff8ff" text-anchor="start">a button opens its page; K1-K8 set the page's eight columns</text>
 <rect x="50" y="816" width="28" height="28" rx="5" fill="#3cf0ff" fill-opacity=".45" stroke="#3cf0ff" stroke-width="2"/>
-<text x="94.0" y="838.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="26" font-weight="500" fill="#dff8ff" text-anchor="start">let go: back to the main set; the screen lists them</text>
+<text x="94.0" y="838.0" font-family="JetBrains Mono, Consolas, Menlo, monospace" font-size="26" font-weight="500" fill="#dff8ff" text-anchor="start">&lt; &gt; turn the pages; the screen shows the eight columns</text>
 </svg>

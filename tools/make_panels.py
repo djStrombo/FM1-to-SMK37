@@ -248,19 +248,6 @@ def patterns():
     P["pads-strum"] = panel(lit, kf, legend=[(AM, "pads: 16 strings, top row low, bottom row high"),
                                              (MG, "keybed: hold a chord, then swipe across a row")])
 
-    # pads: four 2x2 groups = the four corners, one parameter family each
-    fam = [("#287cff", "SEL"), (AM, "MODE"), ("#aa5aff", "FILT"), ("#ff3c5a", "MUTE")]
-    lit = {}
-    for g, (col, n) in enumerate(fam):
-        for r in range(2):
-            for c in range(2):
-                i = r * 8 + g * 2 + c
-                lit[f"p{i + 1}"] = (col, f"{n} {r * 2 + c + 1}", (r * 2 + c) == 1)
-    lit["screen"] = (CY, "1     2\n\n3     4")
-    P["pads-xy"] = panel(lit, legend=[(fam[0][0], "each 2x2 group: corners 1 2 / 3 4 as on the screen"),
-                                      (fam[1][0], "one group per job: select, mode, filter, mute"),
-                                      (fam[2][0], "pad brightness = how loud that corner is now")])
-
     # faders: banks with soft takeover
     lit = {f"f{j + 1}": (TRK[j], f"T{j + 1}") for j in range(4)}
     lit["fb"] = (AM, "BANK")
@@ -269,11 +256,6 @@ def patterns():
     P["faders-banks"] = panel(lit, legend=[(TRK[0], "fader i = track i, in the track colour"),
                                            (AM, "FADER BANK: A level, B filter, C reverb, D delay"),
                                            (CY, "a fader takes over only once it moves")])
-
-    # faders: a fixed mixer / sends
-    lit = {"f1": (CY, "REV"), "f2": (CY, "DLY"), "f3": (CY, "CHO"), "f4": (MG, "VOL"), "screen": (CY, "a bar\nover the view")}
-    P["faders-mixer"] = panel(lit, legend=[(CY, "one job per fader, always the same"),
-                                           (MG, "volume on the right, like a mixing desk")])
 
     # wheels
     lit = {"pitch": (MG, "BEND"), "mod": (MG, "MOD"), "screen": (MG, "BEND +3")}
@@ -298,12 +280,13 @@ def patterns():
     P["buttons"] = panel(lit, legend=[(CY, "the FM-1's 14 buttons: same job, printed name wins"),
                                       (MG, "4 extras: banks, < > pages")])
 
-    # held button lends the knobs another job
-    lit = {f"k{i + 1}": (AM, n) for i, n in enumerate(["ATK", "DEC", "SUS", "REL", "DET", "GLD", "STK", "STR"])}
-    lit["b_chord"] = (AM, "HOLD")
-    lit["screen"] = (AM, "VOICE\nK1-K8")
-    P["knobs-hold"] = panel(lit, legend=[(AM, "hold a button: the 8 knobs get its 8 jobs"),
-                                         (CY, "let go: back to the main set; the screen lists them")])
+    # a button opens a page, K1-K8 set its eight columns, < > turn the pages
+    lit = {f"k{i + 1}": (AM, f"V{i + 1}") for i in range(8)}
+    lit["b_chord"] = (AM, "ENVELOPE")
+    lit["left"], lit["right"] = (CY, "<"), (CY, ">")
+    lit["screen"] = (AM, "ENVELOPE" + chr(10) + "ATTACK")
+    P["knobs-page"] = panel(lit, legend=[(AM, "a button opens its page; K1-K8 set the page's eight columns"),
+                                         (CY, "< > turn the pages; the screen shows the eight columns")])
     return P
 
 

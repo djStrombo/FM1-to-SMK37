@@ -22,12 +22,10 @@ controls add to that and never take something away. A new firmware (no FM-1 manu
 | Pads | [Sound picker](#pads-sound-picker) | Snoop37 | many presets, chosen by scrolling on the FM-1 |
 | Pads | [Voices and a CHAOS pad](#pads-voices-and-a-big-gesture) | Makkuro37 | a drone or multi-voice instrument |
 | Pads | [Strum plate](#pads-strum-plate) | FoMni37 | a chord instrument |
-| Pads | [Four corners](#pads-four-corners) | Vector37 (in progress) | a sound made of four sources or a 2D space |
 | Faders | [Banks with soft takeover](#faders-banks-with-soft-takeover) | Snoop37, Makkuro37, FoMni37 | per-track settings, more than four jobs |
-| Faders | [Fixed mixer](#faders-a-fixed-mixer) | Vector37 | one instrument, few global amounts |
 | Wheels | [Bend and vibrato, or a macro](#wheels-bend-and-vibrato-or-a-macro) | all ports | always |
 | Knobs | [The FM-1 top row](#knobs-the-fm-1-top-row) | Snoop37, X0X37, FoMni37 | keeping the FM-1 workflow |
-| Knobs | [Held button lends the knobs](#knobs-a-held-button-lends-them-a-set) | Vector37, Makkuro37 | a redesign with many parameters and no menus |
+| Knobs | [A page per button, eight columns](#knobs-a-page-per-button-eight-columns) | Makkuro37 | a redesign with many parameters per voice |
 | Buttons | [Printed meaning, four extras](#buttons-printed-meaning-and-four-extras) | all ports | always |
 
 ## Keys: the FM-1 range in the middle
@@ -93,17 +91,6 @@ it. A string lights while it rings; at rest the root strings glow dimly. Velocit
 - **Used in:** FoMni37 (the Omnichord-style chord harp).
 - **Choose:** a chord instrument, an arpeggiator or anything played by sweeping.
 
-## Pads: four corners
-
-![Pads as four corners](../assets/panel/pads-xy.svg)
-
-Four 2x2 groups, each one job (select, mode, filter, mute). Inside each group, top left is corner 1, top right
-corner 2, bottom left 3, bottom right 4, the same as on the screen. Each pad is as bright as its corner is heard
-right now, so the pads show the sound moving.
-
-- **Used in:** Vector37 (in progress).
-- **Choose:** a sound made from four sources, an XY space, or any four-part instrument.
-
 ## Faders: banks with soft takeover
 
 ![Fader banks](../assets/panel/faders-banks.svg)
@@ -116,22 +103,12 @@ bank A.
 - **Used in:** Snoop37 (as above), Makkuro37 (banks FX L, FX R, LFO, PLAY, OUTPUT), FoMni37 (banks A and B).
 - **Choose:** per-track settings, or more than four things worth a fader.
 
-## Faders: a fixed mixer
-
-![Faders as a mixer](../assets/panel/faders-mixer.svg)
-
-One job per fader, always the same: reverb, delay, chorus, volume. Moving one shows a bar over the screen for a
-moment. Soft takeover still applies at power-on.
-
-- **Used in:** Vector37.
-- **Choose:** a single instrument with a few global amounts. No bank state to remember.
-
 ## Wheels: bend and vibrato, or a macro
 
 ![Wheels](../assets/panel/wheels.svg)
 
-Pitch wheel = bend (Snoop37: +-7 semitones on the selected track; FoMni37 and Vector37: +-2). Mod wheel = vibrato
-(Snoop37: 10 Hz, up to +-1 semitone, up = more), or one performance macro (Vector37: the suborbit size). The
+Pitch wheel = bend (Snoop37: +-7 semitones on the selected track; FoMni37: +-2). Mod wheel = vibrato (Snoop37:
+10 Hz, up to +-1 semitone, up = more; FoMni37: 5.5 Hz, up to +-1/2 semitone), or one performance macro. The
 wheels calibrate themselves: centre taken at power-on, the range widens as the wheel is seen to move, with a dead
 band around the centre.
 
@@ -148,16 +125,16 @@ four dials in their colours. One encoder step per detent.
 - **Used in:** Snoop37, X0X37, FoMni37.
 - **Choose:** keeping the FM-1 workflow. Matching knob caps make it obvious.
 
-## Knobs: a held button lends them a set
+## Knobs: a page per button, eight columns
 
-![A held button lends the knobs](../assets/panel/knobs-hold.svg)
+![A page per button](../assets/panel/knobs-page.svg)
 
-The knobs have one main set. Holding a button gives them that button's eight jobs (CHORD: attack, decay, ...);
-the screen lists the eight while the button is held. Letting go returns to the main set. Makkuro37 uses a related
-rule: a button opens a menu, K1-K8 set its eight columns, `<` `>` turn the pages.
+One logic for every menu: a button opens its page, K1-K8 set the page's eight columns (one per voice, or eight
+parameters), `<` `>` turn the pages. A value with two choices can sit on the column's pads. The screen draws the
+eight columns in the knobs' order, so knob i always means column i.
 
-- **Used in:** Vector37, Makkuro37.
-- **Choose:** a redesign with many parameters and no menus.
+- **Used in:** Makkuro37.
+- **Choose:** a redesign with many parameters per voice; one rule replaces many menus.
 
 ## Buttons: printed meaning and four extras
 

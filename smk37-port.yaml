@@ -2,7 +2,7 @@
 #
 # The agent copies this file into the firmware repository, fills it from the owner's answers (AGENTS.md, step 0)
 # and implements it in step 4. Change the file first, then the code. Patterns: docs/06-mapping-patterns.md.
-# Filled examples: examples/snoop37.yaml, examples/vector37.yaml.
+# Filled example: examples/snoop37.yaml.
 
 firmware:
   name: ""                  # the port's name, shown on the boot screen and in the installer (e.g. Snoop37)
@@ -32,7 +32,7 @@ keys:
   velocity: factory         # factory (the unit's calibration curves) | fixed
 
 pads:
-  pattern: steps            # steps | picker | perform | strum | xy | custom   (docs/06, "Pads")
+  pattern: steps            # steps | picker | perform | strum | custom   (docs/06, "Pads")
   order: reading            # reading: pads 1-8 top row (hardware pads 8..15), 9-16 bottom (0..7)
   colours: screen           # screen (the screen's track / group colours) | custom
   idle: dark                # dark | dim: what an unused pad shows
@@ -75,7 +75,7 @@ knobs:
   K7: dial 3
   K8: dial 4
   step: detent              # one encoder step per detent
-  hold_sets: {}             # optional: button held -> eight knob jobs, e.g. CHORD: [attack, decay, ...]
+  pages: {}                 # optional: button -> its page's eight knob columns, e.g. CHORD: [attack 1, ...]
 
 buttons:                    # the FM-1's 14 buttons by printed name (docs/04-controls-mapping.md); change only on purpose
   map: printed

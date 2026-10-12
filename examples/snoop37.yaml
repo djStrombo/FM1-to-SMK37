@@ -14,8 +14,8 @@ firmware:
 
 delivery:
   mode: both                # own release (Snoop37) and the SLOOP PR isod89/sloop-fm1#112
-  usb_name: SLOOP's own     # installers already know it
-  data_family: SLOOP's own  # the store owner tag keeps other ports from reading it
+  usb_name: Felucca         # SLOOP's USB product string; installers already know it
+  data_family: SLOOP        # FELUCCA_DATA_FAMILY default; the owner tag at 0xAF000 keeps other ports out
   boot_logo: Snoop37 intro and jingle (fork only, a BOOT LOGO setting)
   credit: SMK-37 port by genkigenki
 
@@ -80,7 +80,7 @@ knobs:
   K7: dial 3 (yellow)
   K8: dial 4 (orange)
   step: detent
-  hold_sets: {}
+  pages: {}
 
 buttons:
   map: printed              # PATCH = HOME, CHORD = ENV, NOTE REPEAT = LFO, SCALE = SEL, PARA = EDIT, GLOBE = GLO, BT = SAVE
