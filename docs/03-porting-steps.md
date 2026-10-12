@@ -139,7 +139,7 @@ it like this. Full tables are in [04-controls-mapping.md](04-controls-mapping.md
 |---|---|---|
 | keys 5..31 (F3..G5, the middle 27) | the FM-1's 27 note keys, with velocity | `smk_input.h` sets note bits 0..26 from keybed keys 5..31 |
 | keys 0..4 and 32..36 (C3..E3, G#5..C6) | extra notes on synth tracks, extra drum sounds on the drum track | a separate event queue (`smk_extkey_take`), handled in the UI |
-| 16 pads | the 16 **white** keys of the 27 (F3 G3 A3 B3 C4 D4 E4 F4 / G4 A4 B4 C5 D5 E5 F5 G5) | top row (hardware pads 8..15) = white keys 1..8, bottom row (pads 0..7) = 9..16; the pad sets the same note bit as the key |
+| 16 pads | the 16 **white** keys of the 27 (F3 G3 A3 B3 C4 D4 E4 F4 / G4 A4 B4 C5 D5 E5 F5 G5) | top row (hardware pads 0..7) = white keys 1..8 in a step grid; as a keyboard, low notes at the bottom (pads 8..15). Convert in one place (`SMK_PAD_OF_WHITE`); the pad sets the same note bit as the key |
 | pad LEDs | what the FM-1 key LEDs showed: steps, playhead, layer tiles, in the track colour | drawn from the UI state once per frame |
 | piano layout on the pads (optional) | for scale or key pages | bottom row C4..C5 white, top row the black keys between them |
 | K1..K8 | K1 MASTER (virtual pot), K2 SELECT, K3 ALGORITHM, K4 PRESETS, K5..K8 KNOB 1..4 | SLOOP's panel table (function to hardware id) |
@@ -183,8 +183,8 @@ The reference build writes `build/sloop-smk37.fwsc` (identity `SMK-37 Pro_900`).
 | Check | Console / action | Expected |
 |---|---|---|
 | ADC runs | `smk`: `adc_ok` rises, `adc_miss` stays near 0 | if `adc_miss` rises, the ADC timing is wrong |
-| Pads | `smk`: `pad raw` and `pad base` per pad | idle near the baseline, a hit well above it; the top row is pads 8..15 |
-| Pad LED colours and order | `padtest` | the first four pads of the top row, from the left: red, green, blue, white (for 20 s) |
+| Pads | `smk`: `pad raw` and `pad base` per pad | idle near the baseline, a hit well above it; the top row is pads 0..7 |
+| Pad LED colours and order | `padtest` | hardware pads 8..11 light red, green, blue, white (for 20 s): the first four of the **bottom** row (some console texts say "top row"; trust the unit) |
 | Pad LED state | `leds` | the colour word the firmware holds for each pad |
 | Faders | `smk`: `fader raw` and `fader` | raw 0..1023, value 0..127, both ends reachable |
 | Wheels | `smk`: `wheel0`, `wheel1`, `bend`, `modw` | pitch rests around 535, mod moves the other way (up = lower raw) |

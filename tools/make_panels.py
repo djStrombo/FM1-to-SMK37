@@ -33,7 +33,7 @@ def controls():
         c[k] = ("btn", 323 if i & 1 else 270, 323 + (i >> 1) * 27, 48, 22, n)
     for i in range(8):
         c[f"k{i + 1}"] = ("knob", 453 + i * 94, 197, 60, 60, f"K{i + 1}")
-    for i in range(16):                                     # p1..p8 top row (hardware pads 8..15), p9..p16 bottom (0..7)
+    for i in range(16):                                     # p1..p8 top row (hardware pads 0..7), p9..p16 bottom (8..15)
         c[f"p{i + 1}"] = ("pad", 453 + (i % 8) * 94, 277 if i < 8 else 348, 74, 56, str(i + 1))
     for j in range(4):
         c[f"f{j + 1}"] = ("fader", 1222 + j * 96, 242, 75, 125, f"F{j + 1}")
@@ -190,14 +190,14 @@ def patterns():
     # the full map
     lit = {}
     for i in range(16):
-        hw = 8 + i if i < 8 else i - 8
+        hw = i
         lit[f"p{i + 1}"] = (MG, f"{i + 1}" + chr(10) + f"hw {hw}")
     kf = core_keys(CY) | outer_keys(AM, AM)
     kf |= {0: (AM, "C3"), 5: (CY, "F3"), 31: (CY, "G5"), 36: (AM, "C6")}
     P["panel"] = panel(lit, kf, names=True, legend=[
         (CY, "middle 27 keys F3..G5 = the FM-1 keybed (velocity)"),
         (AM, "outer 10 keys C3..E3, G#5..C6: new"),
-        (MG, "16 RGB pads: top row 1-8 = hardware pads 8..15, bottom 9-16 = 0..7")])
+        (MG, "16 RGB pads: top row 1-8 = hardware pads 0..7, bottom 9-16 = 8..15")])
 
     # keys: the FM-1 range in the middle, the outer ten extend it
     kf = core_keys(CY) | outer_keys(AM, AM, ["kick", "", "snr", "", "hat"], ["cow", "", "oh", "crs", "ride"])

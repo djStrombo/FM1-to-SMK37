@@ -6,8 +6,9 @@ group, write the choice into [`smk37-port.yaml`](../smk37-port.yaml), then imple
 
 ![The SMK-37 Pro panel](../assets/smk37-panel.png)
 
-Pad numbers in this guide are in reading order: pads 1-8 are the top row (hardware pads 8..15), pads 9-16 the
-bottom row (hardware pads 0..7). The diagrams are drawn by `tools/make_panels.py`.
+Pad numbers in this guide are in reading order: pads 1-8 are the top row (hardware pads 0..7), pads 9-16 the
+bottom row (hardware pads 8..15). The hardware index is the same for hits and LEDs; see
+[01-hardware.md](01-hardware.md), 6.3. The diagrams are drawn by `tools/make_panels.py`.
 
 **The base rule:** every FM-1 control keeps a home on the SMK, so the firmware's manual still applies. The extra
 controls add to that and never take something away. A new firmware (no FM-1 manual to keep) can drop this rule.
@@ -52,7 +53,7 @@ white neighbour.
 ![Pads as steps](../assets/panel/pads-steps.svg)
 
 The 16 pads are the FM-1's 16 white keys F3..G5, in **reading order**: steps 1-8 on the top row, 9-16 on the
-bottom. The hardware numbers the bottom row first, so map top row = hardware pads 8..15. Pads light in the
+bottom (hardware pads 0..7 and 8..15). Convert in one place, for hits and LEDs alike. Pads light in the
 screen's track colours: steps that are on are lit, the playhead and hits bright, off is dark (no glow layers).
 Pads play with velocity.
 

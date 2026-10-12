@@ -33,7 +33,7 @@ keys:
 
 pads:
   pattern: steps            # steps | picker | perform | strum | custom   (docs/06, "Pads")
-  order: reading            # reading: pads 1-8 top row (hardware pads 8..15), 9-16 bottom (0..7)
+  order: reading            # reading: pads 1-8 top row (hardware pads 0..7), 9-16 bottom (8..15)
   colours: screen           # screen (the screen's track / group colours) | custom
   idle: dark                # dark | dim: what an unused pad shows
   playhead: bright          # how the playhead or a hit shows

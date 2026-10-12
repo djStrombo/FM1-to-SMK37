@@ -22,7 +22,7 @@ enough:
 /* board_caps.h: one place that says what the panel has (values for the SMK-37 Pro / the FM-1) */
 #if BOARD_SMK37
 #define CAP_KEYS        37    /* velocity keys; the FM-1 range is keys 5..31 */
-#define CAP_PADS        16    /* RGB pads, reading order 0..15 = hardware 8..15, 0..7 */
+#define CAP_PADS        16    /* RGB pads; hardware 0..7 top row, 8..15 bottom */
 #define CAP_FADERS       4
 #define CAP_WHEELS       2
 #define CAP_OUTER_KEYS  10

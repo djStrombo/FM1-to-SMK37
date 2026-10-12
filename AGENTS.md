@@ -105,7 +105,7 @@ Implement `smk37-port.yaml`, using the patterns in [docs/06-mapping-patterns.md]
 Default order:
 
 1. Middle 27 keys (keybed 5..31) = the FM-1 note keys, with velocity from the unit's factory curves.
-2. The 16 pads as decided (default: the FM-1's 16 white keys in reading order, top row = hardware pads 8..15).
+2. The 16 pads as decided (default: the FM-1's 16 white keys in reading order, top row = hardware pads 0..7).
 3. Pad LEDs show what the FM-1 key LEDs showed, in the screen's colours.
 4. Buttons and knobs by printed name; K1 is the virtual MASTER pot; one encoder step per detent.
 5. The extras: outer keys, faders (soft takeover), wheels (self-calibrating).

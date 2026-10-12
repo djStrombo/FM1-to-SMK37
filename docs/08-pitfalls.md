@@ -34,7 +34,7 @@ Things that went wrong in earlier ports, and the fix. Check this list before ste
 | Pitfall | Fix |
 |---|---|
 | Newer WS2812 parts need a longer reset than the stock firmware sends; a glitch shifts the chain and a pad lights its neighbour. | Send a long reset (about 250 bytes of zeros) before each pad LED frame. |
-| Pad and LED numbering does not match reading order (the hardware's bottom row is pads 0..7). | Map once, in the board layer: pads 1-8 top = hardware 8..15. |
+| Docs, comments and console texts disagreed on which row is which. | Verified on a unit: top row = hardware pads 0..7, bottom = 8..15, the same index for hits and LEDs ([01-hardware.md](01-hardware.md), 6.3). Convert in one place; check with `padtest` and `smk` at bring-up. |
 | Two-colour button LEDs: one LED index is the other half of a neighbour (SEQ PLAY's red half). | Take LED indices from the reference series, confirmed on a unit. |
 | The SMK gives no VBUS on its USB-C port. | USB host experiments need a powered hub or an external 5 V supply. |
 | Faders and wheels are noisy near the ends. | A dead band of +-1 step, ends reachable; wheels self-calibrate from the power-on centre. |

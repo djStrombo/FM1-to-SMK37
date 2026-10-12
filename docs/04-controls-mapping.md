@@ -54,16 +54,20 @@ The SMK's extra controls (outer keys, faders, wheels, spare buttons) add to that
 | 27 keys F3..G5 | notes; in layers: tiles (steps, effects, mix, ...) | middle 27 keys F3..G5 | the same, with velocity |
 | none | | lowest 5 keys C3..E3 | synth tracks: notes. Drum track: C3 kick, D3 snare, E3 hi-hat (a black key plays its left white neighbour). |
 | none | | highest 5 keys G#5..C6 | synth tracks: notes. Drum track: G#5 cowbell, A5 open hi-hat, B5 crash, C6 ride. |
-| LEDs under the 27 keys | what is on or playing | 16 RGB pads | the pads are the 16 **white** keys (top row 1..8, bottom row 9..16), with velocity. Lit in the screen's track colours (blue, green, yellow, orange): steps lit, playhead and hits bright, off is dark. SEL layer: piano layout. SAVE layer: used slots green, free slots white. |
+| LEDs under the 27 keys | what is on or playing | 16 RGB pads | the pads are the 16 **white** keys (as steps and tiles: top row 1..8, bottom row 9..16), with velocity. Lit in the screen's track colours (blue, green, yellow, orange): steps lit, playhead and hits bright, off is dark. SEL layer: piano layout. SAVE layer: used slots green, free slots white. |
 
-White key to pad:
+White key to pad. Hardware pads 0..7 are the top row, 8..15 the bottom row ([01-hardware.md](01-hardware.md), 6.3).
+Snoop37 uses two orders: as a step grid or tiles the pads read like text; as a keyboard the low notes are at the
+bottom.
 
 | White key | F3 | G3 | A3 | B3 | C4 | D4 | E4 | F4 | G4 | A4 | B4 | C5 | D5 | E5 | F5 | G5 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Position | top 1 | top 2 | top 3 | top 4 | top 5 | top 6 | top 7 | top 8 | bottom 1 | bottom 2 | bottom 3 | bottom 4 | bottom 5 | bottom 6 | bottom 7 | bottom 8 |
-| Hardware pad | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| Step grid, tiles | top 1 | top 2 | top 3 | top 4 | top 5 | top 6 | top 7 | top 8 | bottom 1 | bottom 2 | bottom 3 | bottom 4 | bottom 5 | bottom 6 | bottom 7 | bottom 8 |
+| Hardware pad (grid) | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+| Keyboard | bottom 1 | bottom 2 | bottom 3 | bottom 4 | bottom 5 | bottom 6 | bottom 7 | bottom 8 | top 1 | top 2 | top 3 | top 4 | top 5 | top 6 | top 7 | top 8 |
+| Hardware pad (keyboard) | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 
-Piano layout (on request of the UI): the bottom row plays C4 D4 E4 F4 G4 A4 B4 C5, and the top row the black keys
+Piano layout (on request of the UI): the top row plays C4 D4 E4 F4 G4 A4 B4 C5, and the bottom row the black keys
 between them (C#4 D#4, gap, F#4 G#4 A#4, gap, C#5).
 
 ## Power-on and special combos

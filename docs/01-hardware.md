@@ -329,8 +329,19 @@ conversion it also clears bit 14 of register `0x11900`, as the stock firmware do
 
 16 force-sensitive pads with velocity and pressure.
 
-- **Physical layout: the top row is hardware pads 8..15 (mux B), the bottom row is pads 0..7 (mux A)**, both
-  left to right. Status: **verified**.
+- **Physical layout: the top row is hardware pads 0..7 (mux A), the bottom row is pads 8..15 (mux B)**, both
+  left to right. Status: **verified** with `padtest` on a unit (2026-10-10). Earlier notes, console texts and
+  comments in some layers say the opposite; they are wrong.
+- One number for each pad: the hardware pad index is the same for the analog reading (the muxes) and for the LED
+  (through the chain-slot table in section 4). Count in this index everywhere and convert to reading order in one
+  place (the HAL's `SMK_PAD_OF_WHITE` / `SMK_WHITE_OF_PAD`).
+
+| Position | top 1 | top 2 | top 3 | top 4 | top 5 | top 6 | top 7 | top 8 | bottom 1 | bottom 2 | bottom 3 | bottom 4 | bottom 5 | bottom 6 | bottom 7 | bottom 8 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Reading order (kit) | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
+| Hardware pad (ADC and LED) | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+| Mux | A | A | A | A | A | A | A | A | B | B | B | B | B | B | B | B |
+| LED chain slot | 0 | 15 | 14 | 13 | 12 | 11 | 10 | 9 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 - Each pad has a slowly tracking baseline (start at 100; step down by 1 when the reading is below it; step up by
   2 while below the pad curve's first point).
 - The reference port: a hit starts at baseline + 24. The peak of the next 3 samples goes through the pad's
