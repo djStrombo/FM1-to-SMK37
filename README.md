@@ -5,9 +5,9 @@
 A kit to migrate open M-Vave FM-1 firmwares to the M-Vave SMK-37 Pro with a coding agent such as Claude Code,
 and to develop for both boards from one source.
 
-[Install the ports](https://genkigenki.github.io/smk37/) ·
+[Website](https://genkigenki.github.io/smk37/kit.html) ·
 [Agent playbook](AGENTS.md) · [Mapping patterns](docs/06-mapping-patterns.md) ·
-[Setup file](smk37-port.yaml) · [Develop for both](docs/07-develop-for-both.md) · [Pitfalls](docs/08-pitfalls.md) · by **genkigenki**
+[Setup file](smk37-port.yaml) · [Develop for both](docs/07-develop-for-both.md) · [Pitfalls](docs/08-pitfalls.md) · [Install the ports](https://genkigenki.github.io/smk37/) · by **genkigenki**
 
 ## Steps to migrate
 
