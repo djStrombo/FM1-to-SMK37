@@ -150,6 +150,11 @@ because a correct port never writes them. The stock app area can always be resto
 
 Interrupted? Power-cycle and run the installer again. The loader resumes.
 
+First boot: the port checks the store's owner tag (`0xAF000`). Data without the port's tag is another firmware's,
+so it is cleared: with `FELUCCA_DATA_UNTAGGED_OK 0` that includes the stock firmware's settings (`0x9D000-0xAEFFF`
+and `0xB0000`). The calibration, Bluetooth data and the stock resources are not touched, and the stock firmware
+rebuilds its settings after a return to stock. Tell the owner before the first install.
+
 ## 5. Recovery
 
 From mild to severe:

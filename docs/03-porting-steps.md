@@ -1,9 +1,13 @@
 # 03: Porting a firmware, step by step
 
-This walkthrough ports a Felucca-family FM-1 firmware to the SMK-37 Pro by applying the board patch series from
-[Snoop37](https://github.com/genkigenki/Snoop37) (branch `smk37-board`). The series was written against
-SLOOP 2.5. File names below are SLOOP's. Felucca and its direct forks use the same HAL files and mostly the
-same source layout.
+This walkthrough ports a Felucca-family FM-1 firmware to the SMK-37 Pro. The board layer comes in two forms:
+
+- **SLOOP forks:** the patch series from [Snoop37](https://github.com/genkigenki/Snoop37), branch `smk37-board`,
+  written against SLOOP 2.5.
+- **Felucca forks:** one commit on Felucca main, branch `smk37` of
+  [genkigenki/Felucca](https://github.com/genkigenki/Felucca) (the same as hugelton/Felucca#237).
+
+Both touch the same files; file names below are SLOOP's, Felucca's are mostly the same.
 
 **Ground rules for the port:**
 
@@ -14,8 +18,16 @@ same source layout.
 
 ## 0. Prerequisites
 
-- A Linux machine or WSL2. The JieLi toolchain is distributed for Linux.
-- `git`, Python 3 (with Pillow if the firmware builds images), `sh`.
+- A Linux machine or WSL2. The JieLi toolchain is distributed for Linux. On Windows, run every build and test in
+  WSL, not in Git Bash (Git Bash mangles `$` in commands passed on to WSL; put longer commands in a script and run
+  `wsl bash script.sh`). The firmware's `BUILDING.md` may be written for macOS; the steps below work on Linux.
+- `git`, `sh`, a host C compiler, and Python 3 with **Pillow that has raqm** (`ImageFont.Layout`). Distribution
+  packages are often too old (Ubuntu 22.04's 9.0.1 fails); use a virtual environment:
+
+  ```sh
+  python3 -m venv ~/.venv-fw && ~/.venv-fw/bin/pip install Pillow fonttools
+  ~/.venv-fw/bin/python -c "from PIL import features; print(features.check('raqm'))"   # True
+  ```
 - The JieLi pi32v2 toolchain. SLOOP and Felucca ship `tools/get_toolchain.sh`, which downloads it from JieLi's
   package server into `~/.jieli/toolchain`.
 - A few files from the JieLi AC79 SDK (`fw-AC79_AIoT_SDK`, tag `AC79NN_SDK_V1.2.1_2023-12-13`, folder
@@ -30,8 +42,13 @@ same source layout.
 - An SMK-37 Pro with a **full flash backup** ([02-update-and-recovery.md](02-update-and-recovery.md),
   section 3).
 
-On Windows, set `core.autocrlf=false` in the clone before checking out. Some build scripts break on CRLF line
-endings.
+Line endings: Git for Windows converts to CRLF by default, and patches and build scripts break. Clone with
+`git clone -c core.autocrlf=false URL` (the option after `clone` is stored in the repository; `git -c ... clone`
+is not), or run `git config core.autocrlf false` in the clone and check out again. Check:
+`git config --local core.autocrlf` prints `false`.
+
+Overrides if the tools are not in their default places: `JIELI_TOOLCHAIN` (default `~/.jieli/toolchain`) and
+`AC79_SDK` (the SDK clone), as the firmware's `tools/build.py` reads them.
 
 ## 1. Get the firmware source and build it unchanged
 
@@ -41,6 +58,10 @@ cd <firmware>
 sh build.sh                       # FM-1 build
 sha256sum build/*.bin build/*.fwsc build/loader/ota.bin > ../fm1-reference.sha256
 ```
+
+The app binary, the package and the loader must match later; the other `.bin` files are intermediates. Builds
+embed `__DATE__` (the JieLi clang ignores `SOURCE_DATE_EPOCH`), so compare on the same day, or rebuild the
+baseline from the base commit on the day of the comparison: `git worktree add ../fm1-base <base>`.
 
 Run the host tests if the project has them (`sh tests/run_tests.sh` in SLOOP). Note which tests already fail,
 so you do not blame the port for them later.
@@ -58,7 +79,19 @@ git merge-base HEAD felucca/main    # otherwise a Felucca fork
 Many forks were started from a copy rather than a git fork. In that case, compare `firmware/hal/` and
 `tools/build.py` by hand with the closest SLOOP or Felucca release.
 
-## 2. Get the board patch series
+## 2. Get the board layer
+
+**Felucca fork:** fetch the one commit and cherry-pick it, then go on with section 4:
+
+```sh
+git remote add ref https://github.com/genkigenki/Felucca.git && git fetch ref smk37
+git switch -c smk37 && git cherry-pick -x ref/smk37
+```
+
+Expect conflicts where the fork changed the build, the flash header, the UI input and the sequencer. A file the
+fork deleted (modify/delete conflict): keep it deleted and carry the SMK hunks to the fork's replacement.
+
+**SLOOP fork:** the patch series.
 
 ```sh
 git remote add snoop37 https://github.com/genkigenki/Snoop37.git
@@ -101,8 +134,9 @@ hand from the table below. Then continue with the rest.
 
 Cherry-picking works too: `git cherry-pick <base>..snoop37/smk37-board`.
 
-**For a Felucca fork without SLOOP history,** apply patches 1 and 2 file by file. New files (`smk_input.h`,
-`fm1_flash_map.h`, the SMK tests) go in unchanged. For the changed files, read each hunk and apply its intent.
+**For a fork without SLOOP or Felucca history** (a copied tree), take the Felucca commit as a model and apply
+it file by file. New files (`smk_input.h`, `fm1_flash_map.h`, the SMK tests) go in unchanged. For the changed
+files, read each hunk and apply its intent.
 
 ## 4. Resolve conflicts by area
 
@@ -115,7 +149,7 @@ Cherry-picking works too: `git cherry-pick <base>..snoop37/smk37-board`.
 | ADC | `smk_input.h` | MASTER pot becomes a virtual pot on encoder K1; battery from mux C | Forks that read more FM-1 pots need more virtual pots. Keep the SMK ADC timing. |
 | LCD and pad LEDs | `firmware/hal/fm1_lcd_hw.h`, `src/lcd.c` | pins PB6/PB7/PC8/PB5, SPI1 group A, no backlight, SMK init table; `fm1_padled_send` / `fm1_padled_done` switch SPI1 to group B for the LED frame | Forks that tuned the FM-1 init table: keep theirs under `#else`. The LED flush must run only between LCD transfers. |
 | Flash | `firmware/hal/fm1_flash.h`, `fm1_flash_map.h` (new) | allow-list of writable ranges, `_Static_assert`s against the protected ranges, an independent guard in the RAM flash driver, `FL_JEDEC_OK` with 0xEB6014 | **Never weaken this.** If the fork stores more objects, give them space inside `0x9D000-0xBAFFF` and extend the asserts. |
-| Storage | `src/storage.c`, `src/eng_sample.c`, `src/editor.c`, `src/project.c`, `src/console.c` | SMK sectors for every stored object (projects, preset, autosave, FM6 bank, settings) in `0x9D000-0xAEFFF`; two 80 KiB sample slots in `0xC2000-0xE9FFF`; slots 3 and 4 empty | The most fork-specific part. List every object the fork writes with its FM-1 sector, then lay them out in the SMK store and assert the end address. |
+| Storage | `src/storage.c`, `src/eng_sample.c`, `src/editor.c`, `src/project.c`, `src/console.c` | SMK sectors for every stored object (projects, preset, autosave, FM6 bank, settings) in `0x9D000-0xAEFFF`; two 80 KiB sample slots in `0xC2000-0xE9FFF`; slots 3 and 4 empty | The most fork-specific part. List every object by its enum (`OBJ_*`) with its FM-1 sectors; objects may share an A/B pair (told apart by a record type). FM-1 settings at `0xFC000`/`0xFD000` lie in the SMK's protected USR area and must move. Lay everything out in the store window, extras in `0xB1000-0xBAFFF`, and assert the end addresses. The Felucca layer's `_Static_assert(OBJ_COUNT == 10u)` stops the build for a new object, as intended. |
 | Update | `src/ota.c`, `loader/loader.c`, `loader/ldr_core.c`, `src/felucca.c` | staging `0xBB000`, update record at `0xBFF00`; record name `ota-SMK-37 Pro_016`; loader name `ota-SMK-37 Pro_900`; loader writes only the app area and VM; identities `SMK-37 Pro_900` / `SMK-37 Pro_000` | Felucca forks with their own loader name: keep the `ota-` prefix and the model text exactly. |
 | MIDI | `src/felucca.c` | TRS MIDI IN forced off on the SMK, with a build error if it is switched on | PH8 is a matrix row on the SMK. Keep the guard. |
 | UI | `src/main.c`, `src/panel.c`, `src/ui_input.c`, `src/seq.c`, `src/voice.c`, `src/bootguard.h` | button and knob defaults, pads as white keys, outer keys, faders, wheels, LED rules, power-on combos on the SMK's OCTAVE buttons | Expect most conflicts here. See section 5. |
@@ -162,14 +196,17 @@ Hints for other firmwares:
 ## 6. Build
 
 ```sh
-BOARD=smk37 sh build.sh
+BOARD=smk37 sh build.sh && cp build/<app>.fwsc ../        # keep the SMK package
+sh build.sh && sha256sum -c ../fm1-reference.sha256       # FM-1 last: both boards share build/ intermediates
+sh tests/run_tests.sh                                     # the tests expect FM-1 binaries
 ```
 
 The reference build writes `build/sloop-smk37.fwsc` (identity `SMK-37 Pro_900`). Check:
 
 - the app fits the `0x97400` slot (the linker fails otherwise),
 - the package identity is `SMK-37 Pro_9xx`,
-- the host tests pass for both boards.
+- the host tests show no new failures (the SMK tests: flash map, owner tag, package, update, loader). Most forks
+  have no UI test for the SMK mapping; that part is checked on the device.
 
 ## 7. Test on the device
 
