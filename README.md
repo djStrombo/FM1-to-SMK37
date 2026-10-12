@@ -22,8 +22,8 @@ and to develop for both boards from one source.
 2. **Answer the questions.** What should the 16 pads, 4 faders, 10 outer keys, wheels and knobs do? Claude
    writes your answers into [`smk37-port.yaml`](smk37-port.yaml); the [mapping patterns](docs/06-mapping-patterns.md)
    and the [example](examples/) show the options.
-3. **Let it build.** Claude works through [`AGENTS.md`](AGENTS.md): baseline build, the `smk37-board` patch series,
-   storage, controls, both builds, tests. It stops after each area, so you can check what it did. The FM-1 build
+3. **Let it build.** Claude works through [`AGENTS.md`](AGENTS.md): baseline build, the board layer (the Snoop37
+   series for SLOOP forks, the Felucca commit for Felucca forks), storage, controls, both builds, tests. It stops after each area, so you can check what it did. The FM-1 build
    stays byte-identical.
 4. **You do the hardware.** Full flash backup first, then install, play, and tell Claude what works and what
    doesn't (or paste the serial console). It fixes, rebuilds, you install again.
@@ -68,14 +68,17 @@ the working reference for this guide.
   jingle, layout choices).
 - **`smk37-board`** holds only the board port, as a patch series on top of SLOOP. It contains the board
   switch, flash map, update path, input HAL, display, pad LEDs, wheels and UI mapping. Apply this series when
-  you port another firmware. [docs/03-porting-steps.md](docs/03-porting-steps.md) explains how.
+  you port a SLOOP fork. [docs/03-porting-steps.md](docs/03-porting-steps.md) explains how.
+
+For **Felucca forks**, the same board layer exists as one commit on Felucca main: branch `smk37` of
+[genkigenki/Felucca](https://github.com/genkigenki/Felucca), the pull request hugelton/Felucca#237.
 
 ## What can be ported
 
 | Firmware | Base | Effort |
 |---|---|---|
 | SLOOP, sloopDX and other SLOOP forks | SLOOP | Low. The patch series was written against SLOOP 2.5, so most patches apply with `git am -3`. Conflicts appear mainly where the fork changed the UI code. |
-| Felucca and its direct forks (X0X, FoMni-1, Melodee, Jangada, ...) | Felucca | Medium. The HAL patches carry over almost unchanged. Storage, the flash map and the UI mapping must be redone by hand against the fork's own files. |
+| Felucca and its direct forks (X0X, FoMni-1, Melodee, Jangada, ...) | Felucca | Medium. Cherry-pick the one Felucca commit (branch `smk37` of [genkigenki/Felucca](https://github.com/genkigenki/Felucca), = hugelton/Felucca#237); conflicts appear where the fork changed the build, flash header and UI. Storage and the UI mapping follow the fork's own objects and layout. |
 | Firmware that does not use the Felucca HAL (`firmware/hal/fm1_*.h`) | other | High. Use [docs/01-hardware.md](docs/01-hardware.md) as a datasheet and write the board layer yourself. |
 
 Expect about one evening for a SLOOP fork if you already have a working build setup. A Felucca fork with its own
