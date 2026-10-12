@@ -127,7 +127,7 @@ calibration.
 | [docs/04-controls-mapping.md](docs/04-controls-mapping.md) | FM-1 to SLOOP to SMK-37 Pro to Snoop37 control tables |
 | [docs/05-reverse-engineering.md](docs/05-reverse-engineering.md) | How the facts were obtained, and how to reproduce them with public tools |
 | [docs/06-mapping-patterns.md](docs/06-mapping-patterns.md) | Mapping patterns that worked: pads, faders, outer keys, wheels, knobs, buttons, screen rules |
-| [docs/07-develop-for-both.md](docs/07-develop-for-both.md) | One source for both boards: capability layer, build and test matrix, host simulator |
+| [docs/07-develop-for-both.md](docs/07-develop-for-both.md) | One source for both boards: capability layer, build and test matrix |
 | [docs/08-pitfalls.md](docs/08-pitfalls.md) | What went wrong in earlier ports, and the fix |
 | [AGENTS.md](AGENTS.md) | The agent playbook: questions, then baseline to release, with hard rules |
 | [smk37-port.yaml](smk37-port.yaml) | The setup file: every mapping decision for one port; filled examples in [examples/](examples/) |

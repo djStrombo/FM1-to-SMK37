@@ -67,23 +67,3 @@ Build and test every change on both boards, locally and in CI:
 
 A CI workflow only needs the JieLi toolchain (cached) and the matrix above. Host tests on glibc need
 `CC='cc -D_DEFAULT_SOURCE'` (see [08-pitfalls.md](08-pitfalls.md)).
-
-## 4. Develop without hardware
-
-The UI is plain C drawing into a 240 x 240 framebuffer, and the engine renders audio into buffers. Both run on a
-PC:
-
-- **Host screen renderer.** Compile the firmware's UI and drawing code against a simulated panel (a header that
-  fakes the input state and captures the framebuffer). A test presses each control from the controls table and
-  writes a PNG. It checks that the touched thing shows on the screen and doubles as documentation. Makkuro37
-  generates its docs screenshots this way (`tests/screen.c`, `tools/docs_img.sh`).
-- **Engine renders.** The same host build renders presets and test patterns to WAV, measures CPU cost per block
-  and checks for clicks.
-- **WebAssembly simulator.** Compile engine and UI with Emscripten into a page: an AudioWorklet plays the
-  engine, a canvas shows the screen, the page draws the panel and maps mouse, MIDI and computer keys onto it.
-  The [Makkuro37 simulator](https://genkigenki.github.io/smk37/makkuro37-sim/) is one (source: `web/sim` in
-  [Makkuro37](https://github.com/genkigenki/Makkuro37)). It lets the owner try a
-  mapping before anything is flashed.
-
-Hardware stays the final test: velocity, LED timing, ADC noise on faders and wheels, and the flash only show on a
-real unit. The device loop is in [AGENTS.md](../AGENTS.md), step 6.
