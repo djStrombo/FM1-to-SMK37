@@ -55,13 +55,14 @@ With `CAP_*` zero the compiler removes the SMK paths, which keeps the FM-1 build
 
 ## 3. Build and test matrix
 
-Build and test every change on both boards, locally and in CI:
+Build and test every change on both boards, locally and in CI, in this order (both boards write the same
+`build/` intermediates, and the tests expect FM-1 binaries; copy each package out before the next build):
 
 | Job | Command | Check |
 |---|---|---|
-| FM-1 | `sh build.sh` | hashes equal the upstream baseline (`sha256sum -c`) |
 | SMK-37 Pro | `BOARD=smk37 sh build.sh` | builds; package identity `SMK-37 Pro_9xx` |
-| SMK models | `BOARD=smk37 MODEL=elite sh build.sh`, `MODEL=mke` | identities `SMK-37 Elite_…`, `MKE-P37_…` |
+| SMK models | `BOARD=smk37 MODEL=elite sh build.sh`, `MODEL=mke` | identities `SMK-37 Elite_…`, `MKE-P37_…` (layers with `SMK_MODEL` only; the Felucca layer builds the Pro) |
+| FM-1 | `sh build.sh` | hashes equal the upstream baseline (`sha256sum -c`) |
 | Host tests | `sh tests/run_tests.sh` | no new failures; flash map, loader, OTA, owner tag, storage |
 | Screens | the host screen renderer | one image per control, compared with the docs |
 
