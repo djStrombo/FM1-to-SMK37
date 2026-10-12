@@ -44,7 +44,7 @@ rules win over the firmware's own agent files (`CLAUDE.md`, `AGENTS.md`), for ex
   | Base | Board layer | How |
   |---|---|---|
   | SLOOP (and its forks) | `https://github.com/genkigenki/Snoop37.git`, branch `smk37-board` (a patch series on SLOOP 2.5) | `git am -3` |
-  | Felucca (and its forks) | `https://github.com/genkigenki/Felucca.git`, branch `smk37`: one commit on Felucca main (= hugelton/Felucca#237) | `git cherry-pick -x` |
+  | Felucca (and its forks) | `https://github.com/genkigenki/Felucca.git`, branch `smk37`: the commits on Felucca 1.5.1 main `ef1f561` (= hugelton/Felucca#237: the board layer + an emulator fix) | `git cherry-pick -x ef1f561..ref/smk37` |
   | other | [docs/01-hardware.md](docs/01-hardware.md) as the datasheet, the Felucca commit as the model | by hand |
 
 - A Linux or WSL2 shell with the JieLi toolchain, the AC79 SDK files and Pillow with raqm
@@ -116,7 +116,7 @@ git remote add ref https://github.com/genkigenki/Snoop37.git && git fetch ref
 git format-patch <base>..ref/smk37-board -o ../smk37-patches && git am -3 ../smk37-patches/*.patch
 # Felucca fork
 git remote add ref https://github.com/genkigenki/Felucca.git && git fetch ref smk37
-git cherry-pick -x ref/smk37
+git cherry-pick -x ef1f561..ref/smk37     # ALL commits on Felucca 1.5.1 (the layer + the emulator fix), not just the tip
 ```
 
 Resolve conflicts with the area table in [docs/03-porting-steps.md](docs/03-porting-steps.md), section 4. A

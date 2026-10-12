@@ -81,11 +81,11 @@ Many forks were started from a copy rather than a git fork. In that case, compar
 
 ## 2. Get the board layer
 
-**Felucca fork:** fetch the one commit and cherry-pick it, then go on with section 4:
+**Felucca fork:** fetch the branch and cherry-pick all its commits on Felucca 1.5.1 (`ef1f561`), then go on with section 4:
 
 ```sh
 git remote add ref https://github.com/genkigenki/Felucca.git && git fetch ref smk37
-git switch -c smk37 && git cherry-pick -x ref/smk37
+git switch -c smk37 && git cherry-pick -x ef1f561..ref/smk37
 ```
 
 Expect conflicts where the fork changed the build, the flash header, the UI input and the sequencer. A file the
