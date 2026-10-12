@@ -2,12 +2,12 @@
 
 ![FM-1 firmware to SMK-37](assets/hero.png)
 
-A porting kit that lets a coding agent such as Claude Code move an open M-Vave FM-1 firmware onto the
-M-Vave SMK-37 Pro, while you keep your hands on the hardware.
+A kit to migrate open M-Vave FM-1 firmwares to the M-Vave SMK-37 Pro with a coding agent such as Claude Code,
+and to develop for both boards from one source.
 
 [Install the ports](https://genkigenki.github.io/smk37/) ·
 [Agent playbook](AGENTS.md) · [Mapping patterns](docs/06-mapping-patterns.md) ·
-[Setup file](smk37-port.yaml) · [Pitfalls](docs/08-pitfalls.md) · by **genkigenki**
+[Setup file](smk37-port.yaml) · [Develop for both](docs/07-develop-for-both.md) · [Pitfalls](docs/08-pitfalls.md) · by **genkigenki**
 
 ## Port it with Claude in 6 steps
 
@@ -20,7 +20,7 @@ M-Vave SMK-37 Pro, while you keep your hands on the hardware.
    ```
 3. **Answer the questions.** What should the 16 pads, 4 faders, 10 outer keys, wheels and knobs do? Claude
    writes your answers into [`smk37-port.yaml`](smk37-port.yaml); the [mapping patterns](docs/06-mapping-patterns.md)
-   and the [examples](examples/) give you ideas. That's the fun part.
+   and the [example](examples/) show the options.
 4. **Let it build.** Claude works through [`AGENTS.md`](AGENTS.md): baseline build, the `smk37-board` patch series,
    storage, controls, both builds, tests. It stops after each area, so you can check what it did. The FM-1 build
    stays byte-identical.
