@@ -2,7 +2,7 @@
 #
 # The agent copies this file into the firmware repository, fills it from the owner's answers (AGENTS.md, step 0)
 # and implements it in step 4. Change the file first, then the code. Patterns: docs/06-mapping-patterns.md.
-# Filled example: examples/snoop37.yaml.
+# Filled examples: examples/snoop37.yaml, examples/rainbow37.yaml.
 
 firmware:
   name: ""                  # the port's name, shown on the boot screen and in the installer (e.g. Snoop37)
@@ -34,7 +34,7 @@ keys:
   outer: extend             # extend (more notes) | drums (on a drum track) | transpose | off | custom
   outer_drums:              # when outer is drums, or extend on synth tracks and drums on the drum track
     # C3: kick
-  velocity: factory         # factory (the unit's calibration curves) | fixed
+  velocity: factory         # factory (the unit's calibration curves) | fixed (one switch in the layer, docs/06 "toy")
 
 pads:
   pattern: steps            # steps | picker | perform | strum | custom   (docs/06, "Pads")
@@ -105,5 +105,8 @@ screen:
     - no hidden modes; play first, few menus
 
 pedal: none                 # none | sustain | start_stop | custom
+
+modes: {}                   # optional: a second UI in the same firmware (a toy and the full firmware), each with
+                            # its own pads / faders / wheels / outer keys / buttons, and how to switch between them
 
 open_questions: []          # anything still to decide with the owner

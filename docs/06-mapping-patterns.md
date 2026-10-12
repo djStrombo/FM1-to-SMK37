@@ -35,6 +35,7 @@ bottom row (hardware pads 8..15). The hardware index is the same for hits and LE
 | Knobs | [A page per button, eight columns](#knobs-a-page-per-button-eight-columns) | Makkuro37 | a redesign with many parameters per voice |
 | Buttons | [Printed meaning, four extras](#buttons-printed-meaning-and-four-extras) | Snoop37, X0X37, FoMni37 | the firmware names its buttons by function |
 | Buttons | [By row](#buttons-by-row) | | the firmware groups its buttons by row (one row of verbs, one of modes) |
+| Whole port | [A toy for children](#a-toy-for-children) | RAINBOW37 | a firmware for kids, or any safe-by-default instrument |
 
 ## Keys: the FM-1 range in the middle
 
@@ -170,6 +171,20 @@ example one row of actions, one of modes), keep its rows: FM-1 top row to SMK to
 right. The printed names then no longer match, so the screen and the controls table say what each button does.
 
 - **Choose:** the firmware's manual explains its buttons by row rather than by name.
+
+## A toy for children
+
+A firmware a child plays alone. Used in RAINBOW37 (Rainbow mode, with the full Felucca behind a combo).
+
+- **Volume cap.** The grown-ups set a cap; K1 never goes above it. K1 is a virtual pot, so clamp the pot value
+  (`smk_master`) as well as the level, or turning down does nothing for many detents.
+- **Fixed velocity.** The layer reads velocity in `key_vel` and in the outer-key queue. Put one switch there
+  (RAINBOW37: `SMK_KEY_VELOCITY 0` = every key and pad at 100) instead of editing each place.
+- **No menu from the toy.** No stray press opens a menu (not KNOB BANK either). The grown-up controls (a held
+  button, a long combo) are hidden on purpose: the owner's exception to "no hidden modes", noted in the setup file.
+- **Two UIs.** The toy and the full firmware each get their own mapping (`modes:` in the setup file).
+- **Teaching with lights.** The SMK has no key LEDs. Pads as white keys can light the next white key; black keys
+  have no pad. Options: the piano layout on the pads (black keys in the top row), or a keyboard strip on the screen.
 
 ## Screen and UX rules
 

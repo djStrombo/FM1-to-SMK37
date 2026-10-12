@@ -4,8 +4,9 @@ This walkthrough ports a Felucca-family FM-1 firmware to the SMK-37. The board l
 
 - **SLOOP forks:** the patch series from [Snoop37](https://github.com/genkigenki/Snoop37), branch `smk37-board`,
   written against SLOOP 2.5.
-- **Felucca forks:** one commit on Felucca main, branch `smk37` of
-  [genkigenki/Felucca](https://github.com/genkigenki/Felucca) (the same as hugelton/Felucca#237).
+- **Felucca forks:** two commits on Felucca 1.5.1 (`ef1f561`), branch `smk37` of
+  [genkigenki/Felucca](https://github.com/genkigenki/Felucca): the board layer (hugelton/Felucca#237) and an
+  emulator fix.
 
 Both touch the same files; file names below are SLOOP's, Felucca's are mostly the same.
 
@@ -29,7 +30,8 @@ Both touch the same files; file names below are SLOOP's, Felucca's are mostly th
   ~/.venv-fw/bin/python -c "from PIL import features; print(features.check('raqm'))"   # True
   ```
 - The JieLi pi32v2 toolchain. SLOOP and Felucca ship `tools/get_toolchain.sh`, which downloads it from JieLi's
-  package server into `~/.jieli/toolchain`.
+  package server into `~/.jieli/toolchain`. `JIELI_TOOLCHAIN` must name the directory that contains `pi32v2/`,
+  not a folder above it ("no toolchain").
 - A few files from the JieLi AC79 SDK (`fw-AC79_AIoT_SDK`, tag `AC79NN_SDK_V1.2.1_2023-12-13`, folder
   `cpu/wl82/tools`). The firmware's `BUILDING.md` names them and their hashes. A sparse clone is enough:
 
@@ -90,6 +92,17 @@ git switch -c smk37 && git cherry-pick -x ef1f561..ref/smk37
 
 Expect conflicts where the fork changed the build, the flash header, the UI input and the sequencer. A file the
 fork deleted (modify/delete conflict): keep it deleted and carry the SMK hunks to the fork's replacement.
+
+**Older Felucca forks** (RAINBOW37 started from 1.1.5, seven upstream commits before the layer's base):
+
+- `fm6_vbank.c` (1.4.1) does not exist: `git rm` it and drop the FM6 voice bank hunks (`ST_SMK_VBANK`,
+  `FVB_HOME`). 1.1.5 has the same 10 stored objects, so `OBJ_COUNT == 10` stays.
+- Auto-merged hunks may call 1.5 functions (`home_tap()`, `midi_pc_poll()`): remove or replace them.
+- The FM-1 half of `fm1_flash_map.h` takes the fork's own `fm1_flash.h` values, never the layer's: the layer's
+  carries `FL_VBANK`, which grows the FM-1 store range and breaks byte identity.
+- Expect conflicts in `ui_input.c`, `seq.c`, `project.c`, `main.c`, `build.py`, `fm1_flash.h` and `fm1ota.js`.
+- `FL_JEDEC_OK` and `FM1_OCT_BOTH` replace literals in shared code; on the FM-1 they expand to the old literals.
+  Check the FM-1 hashes right after the cherry-pick.
 
 **SLOOP fork:** the patch series.
 
@@ -154,7 +167,7 @@ files, read each hunk and apply its intent.
 | MIDI | `src/felucca.c` | TRS MIDI IN forced off on the SMK, with a build error if it is switched on | PH8 is a matrix row on the SMK. Keep the guard. |
 | UI | `src/main.c`, `src/panel.c`, `src/ui_input.c`, `src/seq.c`, `src/voice.c`, `src/bootguard.h` | button and knob defaults, pads as white keys, outer keys, faders, wheels, LED rules, power-on combos on the SMK's OCTAVE buttons | Expect most conflicts here. See section 5. |
 | Console | `src/console.c` | debug commands `smk`, `padtest`, `leds` | |
-| Host tools | `tools/fm1_install.py`, `web/fm1pkg.js`, `web/fm1ota.js`, web installer page | SMK port names, SMK identities, 20- or 36-block packages checked by CRC, the stock SMK package accepted for the return to stock | Forks often have their own web installer. Port the block detection and the port-name filter into it. Once it accepts SMK loaders, `resume()` must check the loader's model against the package (as `install()` does) and write nothing without the package identity; add a test. In an upstream PR, change `web/` only, never the built copy in `docs/`. |
+| Host tools | `tools/fm1_install.py`, `web/fm1pkg.js`, `web/fm1ota.js`, web installer page | SMK port names, SMK identities, 20- or 36-block packages checked by CRC, the stock SMK package accepted for the return to stock | Forks often have their own web installer. Port the block detection and the port-name filter into it. Once it accepts SMK loaders, `resume()` must check the loader's model against the package (as `install()` does) and write nothing without the package identity; add a test. Older Felucca forks' `resume()` takes any loader without a product: fix it the same way. In an upstream PR, change `web/` only, never the built copy in `docs/`. |
 | Tests | `tests/*` | SMK flash-map test, package layout test, SMK variants of the update and loader tests | Run them. The loader test checks that the protected ranges stay untouched. |
 
 After this step, check two things:
@@ -203,7 +216,9 @@ sh tests/run_tests.sh                                     # the tests expect FM-
 
 The reference build writes `build/sloop-smk37.fwsc` (identity `SMK-37 Pro_900`). Check:
 
-- the app fits the `0x97400` slot (the linker fails otherwise),
+- the app fits the `0x97400` slot (the linker fails otherwise). The Felucca layer costs about 1.8 KB of flash and
+  1.2 KB of RAM over the FM-1 build (RAINBOW37: 538,448 B vs 536,656 B; RAM 94,468 vs 93,220 of 98,304 B). A fork
+  with less than 2 KB of RAM left needs room first,
 - the package identity is `SMK-37 Pro_9xx`,
 - the host tests show no new failures (the SMK tests: flash map, owner tag, package, update, loader). Most forks
   have no UI test for the SMK mapping; that part is checked on the device.

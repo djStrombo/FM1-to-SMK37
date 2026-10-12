@@ -68,9 +68,12 @@ into the firmware repository, fill it from the answers, show it, and get an OK.
 8. Screen: keep the firmware's UI, or redesign it for the bigger panel? Colours?
 9. Name, boot logo, credit line, USB port name.
 10. Flash data: its own data family (other firmwares' data is cleared on a switch, and its own on a switch back),
-    or share the upstream family (data survives switching between the two)?
+    or share the upstream family (data survives switching between the two)? Share only if the settings layouts
+    match byte for byte: check for "unused" settings bytes the fork borrowed and the upstream uses later.
 11. Models: SMK-37 Pro, SMK-37 Elite, MKE-P37, Starrykey 37 Play (uses the Pro build)?
 12. Delivery: own fork and release, an upstream pull request, or both?
+13. Does the firmware have more than one UI (for example a toy, and the full firmware behind a combo)? Map each
+    one (`modes:` in the setup file).
 
 Also tell the owner, before the port:
 
@@ -78,7 +81,8 @@ Also tell the owner, before the port:
 - that the first boot of the port clears the stock firmware's settings area (untagged data, see step 3); the
   calibration and the way back to stock are not touched.
 
-Filled example: [examples/snoop37.yaml](examples/snoop37.yaml).
+Filled examples: [examples/snoop37.yaml](examples/snoop37.yaml) (SLOOP fork),
+[examples/rainbow37.yaml](examples/rainbow37.yaml) (Felucca 1.1.5 fork, a toy with a second UI).
 
 ## 1. Baseline and base
 
@@ -90,7 +94,9 @@ sha256sum build/<app>.bin build/<app>.fwsc build/loader/ota.bin > ../fm1-referen
 sh tests/run_tests.sh || true               # record failures that exist before the port
 ```
 
-The app binary, the package and the loader must match later; other files in `build/` are intermediates. Write
+The names differ per fork (`felucca.bin` / `felucca.fwsc` in Felucca and its forks, `x0x.*`, `omni.*`): check
+`ls build/*.fwsc`. The app binary, the package and the loader must match later; other files in `build/` are
+intermediates. Write
 down the pre-existing test failures (big suites: `grep -n "FAIL\|OVER BUDGET"` the log) and the toolchain
 versions. Builds embed `__DATE__`, and the JieLi clang ignores `SOURCE_DATE_EPOCH`: compare hashes on the same
 day, or rebuild the baseline from the base commit on the day of the comparison (step 5).
@@ -120,7 +126,9 @@ git cherry-pick -x ef1f561..ref/smk37     # ALL commits on Felucca 1.5.1 (the la
 ```
 
 Resolve conflicts with the area table in [docs/03-porting-steps.md](docs/03-porting-steps.md), section 4. A
-file the fork deleted: keep it deleted and move the SMK hunks to the fork's replacement. After each area:
+file the fork deleted: keep it deleted and move the SMK hunks to the fork's replacement. A Felucca fork older
+than 1.5.1: see docs/03, section 2. In `fm1_flash_map.h` the FM-1 half takes the values of the fork's own
+`fm1_flash.h`, never the layer's (the layer's carries 1.4.1's `FL_VBANK`). After each area:
 
 - `sh build.sh && sha256sum -c ../fm1-reference.sha256` passes.
 - `BOARD=smk37 sh build.sh` builds a package with the identity `SMK-37 Pro_9xx`.
@@ -153,7 +161,9 @@ grep -rnE "0x[0-9A-Fa-f]{5}u?" firmware/src/storage.c firmware/src/eng_sample.c 
   layout, then extend the assert and the flash-map test.
 - Data family: set it in `tools/build.py` (`SMK_DATA_FAMILY`, or `FELUCCA_DATA_FAMILY` in the environment) as the
   owner decided, and use the same family in the owner-tag test (`tests/smk_owner_test.c` may hard-code
-  `FELUCCA`). With `FELUCCA_DATA_UNTAGGED_OK 0` the first boot clears untagged data (the stock settings).
+  `FELUCCA`). The tag is 16 bytes with no NUL when the family has 7 letters: compare 16 bytes, not `sizeof`.
+  With another family, add a case that a FELUCCA store is cleared. With `FELUCCA_DATA_UNTAGGED_OK 0` the first
+  boot clears untagged data (the stock settings).
 
 Check: the SMK flash-map test passes and covers every object.
 
@@ -172,6 +182,15 @@ Implement `smk37-port.yaml`, using [docs/06-mapping-patterns.md](docs/06-mapping
    unless the owner asked for it.
 7. The screen rules: the screen shows what you touch first, same colours and places as the panel, no hidden modes.
 
+Before mapping, read the fork's own input and LED code:
+
+- **Every mode that owns the frame.** A fork may run its own loop instead of `ui_input()` / `ui_leds()` /
+  `ui_draw()` (a toy mode). The layer's SMK extras do nothing there. Grep every reader of `fm1_in`,
+  `panel_enc` and `fm1_input_edges` and every writer of `fm1_led*`, and wire the extras into each.
+- **Code sized for the FM-1.** Grep for `14u`, `27u`, `FM1_NCOL` arrays and `14u + k` LED ids. A loop over 14
+  button ids misses FX, SEQ, PLAY and REC (ids 14..17 on the SMK, `FM1_NBTN` is 18); an LED buffer of
+  `FM1_NCOL` overflows (SMK LED ids go up to 63). Such LED code needs an SMK version (button LEDs and pads).
+
 If the fork stores a button map, give the SMK its own magic number. Write the controls table (`SMK37.md` at the
 top level, or another place the fork does not publish) as you go. Host UI tests: run the fork's tests for the FM-1; most forks have no SMK UI test, so say which mapping
 parts are untested until the device loop.
@@ -188,6 +207,7 @@ sh tests/run_tests.sh                                   # no new failures compar
 
 If the firmware has other builds (a browser emulator in `web/emu/`, a simulator, CI workflows), build and run them too:
 they often compile `firmware/src/` without `hal/`, so a new macro the shared sources use must be defined there as well.
+A CI workflow that publishes packages gets the SMK packages only if the owner says so.
 
 A comparison on another day: `git worktree add ../fm1-base <base>`, build there, and compare with that.
 
@@ -218,7 +238,9 @@ BOARD=smk37 MODEL=mke   sh build.sh   # MKE-P37
 
 The Felucca layer builds the Pro only and ignores `MODEL`. To add the other models, port Snoop37's commit
 "SMK-37 Elite and MKE-P37 builds" (`SMK_MODEL`: identity, loader name, recovery identity, update record name,
-installer filters). Each package reports its model's name, so the stock updater can restore that model's factory
+installer filters). In a Felucca fork, FoMni37's commit `b0c7c0c` applies with `git apply --reject`: `fm1_cc.h`,
+`loader.c` and `ota.c` go in clean, the build, tests and installers by hand. Each package reports its model's
+name, so the stock updater can restore that model's factory
 firmware. The installer's port-name filters must include this firmware's USB name. Parse identities to the first
 NUL.
 
@@ -231,7 +253,10 @@ NUL.
   Sources only: leave generated and published directories (the site in `docs/`, built installer copies) to the
   maintainer's build, and keep the SMK docs at the top level or in a place the site does not publish.
 - **Installer:** before delivering, check the resume path (hard rule 9): an SMK loader never gets an FM-1
-  package, an FM-1 loader never an SMK one, and a resume without the package's identity writes nothing.
+  package, an FM-1 loader never an SMK one, and a resume without the package's identity writes nothing. Older
+  Felucca forks (1.1.5) have the hole: `resume()` matches `id.model === "ota-" + model` and, without a product,
+  takes any loader. Reference fix: X0X37 (`sameKeyboard`, nothing written without the identity) and its tests;
+  the web test's fake device needs a settable identity after the write (Elite loader, Pro package).
 - Commit messages describe the change. The owner merges, pushes and publishes.
 
 ## Done when
