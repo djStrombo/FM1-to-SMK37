@@ -38,8 +38,8 @@ Any other coding agent that can read `AGENTS.md` and run a shell works too. At y
 |---|---|---|---|
 | [Makkuro37](https://github.com/genkigenki/Makkuro37) | new firmware | pads gate eight drone voices, a CHAOS pad, fader banks | |
 | [Snoop37](https://github.com/genkigenki/Snoop37) | [SLOOP](https://github.com/isod89/sloop-fm1) | pads in track colours, pad sound picker, fader banks, outer-key drums. The reference port. | [isod89/sloop-fm1#112](https://github.com/isod89/sloop-fm1/pull/112) |
-| [X0X37](https://github.com/genkigenki/X0X37) | [fm1-x0x](https://github.com/charlesvestal/fm1-x0x) | pads as a 16-step grid | [charlesvestal/fm1-x0x#13](https://github.com/charlesvestal/fm1-x0x/pull/13) |
-| [FoMni37](https://github.com/genkigenki/FoMni37) | [fm1-fomni](https://github.com/charlesvestal/fm1-fomni) | pads as a strum plate, keybed holds the chords | [charlesvestal/fm1-fomni#2](https://github.com/charlesvestal/fm1-fomni/pull/2) |
+| [X0X, SMK-37 build](https://github.com/genkigenki/fm1-x0x) | [fm1-x0x](https://github.com/charlesvestal/fm1-x0x) | pads as a 16-step grid | [charlesvestal/fm1-x0x#13](https://github.com/charlesvestal/fm1-x0x/pull/13) |
+| [FoMni, SMK-37 build](https://github.com/genkigenki/fm1-fomni) | [fm1-fomni](https://github.com/charlesvestal/fm1-fomni) | pads as a strum plate, keybed holds the chords | [charlesvestal/fm1-fomni#2](https://github.com/charlesvestal/fm1-fomni/pull/2) |
 | [RAINBOW37](https://github.com/genkigenki/RAINBOW37) | [felucca-rainbow](https://github.com/joshbartlettband-web/felucca-rainbow) | a toy for children: pads in note colours, a volume cap on K1, no menus; the full Felucca behind a combo | [joshbartlettband-web/felucca-rainbow#1](https://github.com/joshbartlettband-web/felucca-rainbow/pull/1) |
 | Felucca | [Felucca](https://github.com/hugelton/Felucca) | the SMK-37 as a build target | [hugelton/Felucca#237](https://github.com/hugelton/Felucca/pull/237) |
 
