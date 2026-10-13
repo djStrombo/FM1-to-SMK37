@@ -1,0 +1,88 @@
+# AMB-1 (a generative ambient machine, X0X / FoMni-1 family on Felucca's platform) on the SMK-37, as an upstream PR.
+# A firmware you tend rather than play: no notes to perform, so the extras became views and gestures.
+# Controls: SMK37.md on the branch smk37 (genkigenki/fm1-amb).
+
+firmware:
+  name: AMB-1                   # unchanged on the SMK-37: same name, boot (splash line "for the SMK-37") and manual
+  upstream: https://github.com/charlesvestal/fm1-amb
+  base: AMB-1 0.9 (Felucca platform by way of X0X and FoMni-1; no shared git history with Felucca)
+  family: x0x                   # app/{plat_fm1,panel,main_fm1,ui}.c, dsp/<engine>.c, host/<x>_host.c, web/emu
+  board_layer: fomni            # genkigenki/fm1-fomni smk37 (405ef41..smk37), applied with git apply -3 (see lessons)
+  lost_on_smk: [TRS MIDI IN / clock in]
+  priorities:
+    - the AMB-1 workflow and manual unchanged
+    - pads as ambient visuals that are also playable
+
+delivery:
+  mode: upstream
+  pr: charlesvestal/fm1-amb#2
+  package: amb-smk37.fwsc       # -elite, -mke
+  identity: SMK-37 Pro_700      # AMB-1's FM-1 identity is FM-1_700: keep the firmware's own number, not _9NN
+  usb_name: AMB-1 SMK-37        # the FM-1 name "AMB-1 FM-1" would be wrong on the SMK; installers match "smk" and "amb-1"
+  data_family: AMB1
+
+models: [pro, elite, mke]
+
+keys:
+  middle: fm1                   # the scale: each key toggles its pitch class
+  outer: extend                 # all 37 toggle (every octave is the same key), from the latched keybed edges
+  velocity: unused
+
+pads:
+  pattern: bell_field           # 16 steps of the scale up from the chord's root (the loops' slot offsets 0..15), keyboard order
+  play: a pad rings a bell (engine hook en_bell, SMK-only), velocity
+  lights: chord tones green (root brightest), frost while frozen, dim while resting; a loop's ring lights its step in the loop's shade
+  picker: KNOB BANK             # top row the 8 pieces, bottom row the 8 modes
+
+faders:
+  pattern: banks
+  takeover: on_move
+  bank_button: FADER BANK
+  banks:
+    A: [Pad, Bells, Bass, Pulse]          # the layer levels
+    B: [Echo, Echo time, Reverb, Size]    # the Space page
+    C: [Evolve, Motion, Drift, Density]
+
+wheels:
+  pitch: {target: bend, range_semitones: 2, applies_to: everything}   # pad, bells (ringing ones too), bass, thump
+  mod: {target: vibrato, rate_hz: 5.5, depth_semitones: 0.5}
+  saved: never                  # en_perf -> one pitch factor a render block (PM() at each oscillator increment)
+  first_try: "echo / reverb throws and Bright as macros: read fine, but inaudible on the unit (the sends were
+    already high, the plate is most of the sound). Owner: wheels must change the sound plainly."
+
+knobs:
+  layout: fm1                   # K1 MASTER, K2 SELECT, K3 ALGORITHM, K4 PRESETS, K5-K8 KNOB 1-4
+
+buttons:
+  map: printed                  # PATCH HOME, CHORD ENV, NOTE REPEAT LFO, PARA EDIT, GLOBE GLO, BT SAVE; SCALE = SEL (no job)
+  extra:
+    KNOB BANK: the piece / mode picker (pinned, lit); also shown 3.6 s after a PRESETS / ALGORITHM turn
+    FADER BANK: A / B / C, the fader card; lit off A
+    "<": previous page (as SELECT)
+    ">": next page
+  one_card: KNOB BANK closes the fader card, FADER BANK closes the picker (the "only one bank mode" rule)
+
+screen:
+  style: keep                   # the garden; the picker and the fader card take the garden's band, the knob strip stays
+
+lessons:
+  - "A charlesvestal firmware (X0X, FoMni-1, AMB-1) is closer to the FoMni / X0X SMK ports than to the Felucca layer:
+    same plat.h / panel.c / main_fm1.c / storage.c. Fetch the FoMni port's branch into the new repo (git remote add,
+    git fetch) so its blobs exist, then git apply -3 the diff 405ef41..fomni/smk37 minus the app files (ui.c,
+    main_fm1.c, app.h, dsp/, the installer page, docs). Most hunks apply cleanly; rename the prefixes (OM_ -> EN_),
+    stems, family, identity number and USB name afterwards and grep for the old project's name."
+  - "The identity number is the firmware's own (AMB-1: FM-1_700 -> SMK-37 Pro_700). fm1pkg_make.py's BOARDS table holds
+    the FM-1 identity too: change it, or the FM-1 build changes."
+  - "Drop the FoMni layer's 30 MHz LCD default (unverified on a unit); the stock 12 MHz (BAUD 4) is what the other ports run."
+  - "plat_keys() on the SMK: the keybed only (fm1_in.knotes), when the pads are not the white keys in this firmware."
+  - "The host simulator can build the SMK UI: stub plat_smk_* in host/<x>_host.c under BOARD_SMK37, add script
+    commands (kbkey, sbtn, pad, fader, wheel, pads) and a scenario dir run by run_tests.sh. That gives the SMK mapping
+    a real test before the device loop, and the site screenshot comes from it."
+  - "Pad visuals from an engine that only publishes per-loop glow: detect a ring as a rise of the glow and read the
+    slot under the published playhead; keep the step per loop until the next ring."
+  - "Wheels: a send or tone macro on a wet ambient engine is too subtle to hear. Bend and vibrato on every
+    oscillator are what owners expect; one SMK-only per-block pitch factor (PM(x) = x on the FM-1, so its binary is
+    unchanged) covers pad, bells, bass and thump with five one-line changes."
+  - "Upstream test that fails on Linux only (missing -lm): note it in the base, fix it in the PR as a side note."
+  - "Tooling: python edits fed through a bash heredoc turned a C/sh backslash-newline into a joined line. Write edit
+    scripts to files (or check the diff for joined lines)."

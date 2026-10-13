@@ -109,7 +109,11 @@ Also tell the owner, before the port:
 
 Filled examples: [examples/sloop.yaml](examples/sloop.yaml) (SLOOP),
 [examples/rainbow.yaml](examples/rainbow.yaml) (Felucca 1.1.5 fork, a toy with a second UI),
-[examples/ghoulbox.yaml](examples/ghoulbox.yaml) (Felucca 1.4.1 fork, own key path and power-on combos).
+[examples/ghoulbox.yaml](examples/ghoulbox.yaml) (Felucca 1.4.1 fork, own key path and power-on combos),
+[examples/choralroot.yaml](examples/choralroot.yaml) (a copied Felucca tree with its own UI, boot stub and many stored
+objects: the layer by hand),
+[examples/orbit.yaml](examples/orbit.yaml) (a SLOOP fork without git history),
+[examples/amb.yaml](examples/amb.yaml) (a generative firmware with no notes to play: the extras as views and gestures).
 
 ## 1. Baseline and base
 

@@ -2,7 +2,8 @@
 #
 # The agent copies this file into the firmware repository, fills it from the owner's answers (AGENTS.md, step 0)
 # and implements it in step 4. Change the file first, then the code. Patterns: docs/06-mapping-patterns.md.
-# Filled examples: examples/sloop.yaml, examples/rainbow.yaml, examples/ghoulbox.yaml.
+# Filled examples: examples/sloop.yaml, examples/rainbow.yaml, examples/ghoulbox.yaml, examples/choralroot.yaml,
+# examples/orbit.yaml, examples/amb.yaml.
 
 firmware:
   name: ""                  # the project's own name, unchanged on the SMK-37 (no "xxx37"); a new firmware names itself

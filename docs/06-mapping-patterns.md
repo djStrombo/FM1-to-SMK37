@@ -24,6 +24,7 @@ bottom row (hardware pads 8..15). The hardware index is the same for hits and LE
 |---|---|---|---|
 | Keys | [Middle 27 = FM-1 keys](#keys-the-fm-1-range-in-the-middle) | all ports | always |
 | Outer keys | [Extend, drums on a drum track](#outer-keys-extend-and-drums) | SLOOP | the firmware has a drum track or a range limit |
+| Pads | [Function keys on the pads](#pads-function-keys-on-the-pads) | ChoralRoot | the firmware uses some keybed keys as functions or modifiers |
 | Pads | [Steps in reading order](#pads-steps-in-reading-order) | SLOOP, X0X, Felucca PR | the firmware has a 16-step sequencer |
 | Pads | [Sound picker](#pads-sound-picker) | SLOOP | many presets, chosen by scrolling on the FM-1 |
 | Pads | [Voices and a CHAOS pad](#pads-voices-and-a-big-gesture) | Makkuro37 | a drone or multi-voice instrument |
@@ -55,6 +56,27 @@ white neighbour.
 - **Choose:** extend when the firmware plays notes; drums when it has a drum track; transpose or off when the
   middle keys are tiles most of the time.
 - **Watch:** an outer-key drum hit lights no pad (the pads show steps).
+
+## Pads: function keys on the pads
+
+When the FM-1 firmware uses some of its keybed keys as functions or modifiers (ChoralRoot's chord block: DIM MIN MAJ SUS,
+6 m7 M7 9 and LOCK on F3..C#4), move those functions onto the pads and let the whole keybed play. This beats mirroring
+the FM-1's keybed onto the pads: the player gets all 37 keys for notes and the functions in a place of their own.
+
+- **Layout by musical meaning:** one group per row or block, in the firmware's own order (ChoralRoot: the top row's
+  left half the types DIM MIN MAJ SUS, the bottom row's the extensions 6 m7 M7 9, then LOCK).
+- **The original behaviour:** a pad is the key it replaces: held while it is held, combinations as with the keys, and
+  it latches only where the original latches (ChoralRoot's LOCK). No latching or one-per-group rule of your own.
+- **Light as the key's light:** bright while held or latched, dim otherwise; a colour per group, the screen's where it
+  has them (ChoralRoot: types white, extensions orange, LOCK blue).
+- **Pads left over: the firmware's mode pickers**, grouped by colour (ChoralRoot: the performance modes, cyan for the
+  free-timing ones Strum, Strum 2 Octaves, Slop, Harp, green for the tempo-synced Arpeggiate, Arp 2 Octaves, Pattern). A
+  tap picks the mode and switches the function on, the playing mode's pad again switches it off, as the firmware's own
+  button does; only the mode playing is bright. Use the firmware's own pick and toggle functions so the button, its
+  layer and the pads always show one state.
+- **Implement:** route the pads to the firmware's key handlers (press / release of the function key), not through the
+  note bits: the keybed keys that carried the functions now play notes and keep their bits.
+- **Used in:** ChoralRoot. **Choose:** the firmware has modifier keys on its keybed.
 
 ## Pads: steps in reading order
 
