@@ -13,7 +13,7 @@ from xml.sax.saxutils import escape
 
 BG, BODY, DIM, DIMF, INK, MUTED = "#04060c", "#1d3550", "#2a3a52", "#0a1220", "#dff8ff", "#7f9bb0"
 CY, MG, AM = "#3cf0ff", "#ff3cd2", "#ffb02a"
-TRK = ["#287cff", "#1ecc70", "#ffc618", "#ff621a"]           # the screen's track colours (Snoop37)
+TRK = ["#287cff", "#1ecc70", "#ffc618", "#ff621a"]           # the screen's track colours (SLOOP on the SMK-37)
 FONT = "JetBrains Mono, Consolas, Menlo, monospace"
 
 SW = 66.09                                                  # white key pitch

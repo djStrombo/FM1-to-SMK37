@@ -2,32 +2,36 @@
 #
 # The agent copies this file into the firmware repository, fills it from the owner's answers (AGENTS.md, step 0)
 # and implements it in step 4. Change the file first, then the code. Patterns: docs/06-mapping-patterns.md.
-# Filled examples: examples/snoop37.yaml, examples/rainbow37.yaml.
+# Filled examples: examples/sloop.yaml, examples/rainbow.yaml, examples/ghoulbox.yaml.
 
 firmware:
-  name: ""                  # the port's name, shown on the boot screen and in the installer (e.g. Snoop37)
+  name: ""                  # the project's own name, unchanged on the SMK-37 (no "xxx37"); a new firmware names itself
   upstream: ""              # the FM-1 firmware's repository URL; empty for a new firmware
   base: ""                  # the release or commit the port starts from
   family: sloop             # sloop | felucca | other  (AGENTS.md step 1: git merge-base)
-  board_layer: snoop37      # snoop37 (smk37-board series, SLOOP forks) | felucca (smk37 commit, Felucca forks) | by_hand
+  board_layer: sloop        # sloop (genkigenki/sloop-fm1 smk37, on SLOOP 2.6) | felucca (genkigenki/Felucca smk37,
+                            # on Felucca 1.6) | by_hand
   lost_on_smk: []           # features the SMK cannot keep, told to the owner, e.g. [TRS MIDI IN / clock in]
   priorities:               # the features that must feel right on the SMK, most important first
     - ""
 
 delivery:
-  mode: fork                # fork (own repo and release) | upstream (one PR behind BOARD_SMK37) | both
-  usb_name: ""              # the USB / MIDI device name; every installer's port filter must include it
+  mode: upstream            # upstream: a PR to the original (someone else's firmware) | own (a new firmware)
+  pr: ""                    # the pull request, once opened
+  fork: ""                  # until merged: the porter's fork of the original and branch (e.g. <porter>/Felucca
+                            # <project>-smk37); archived once the PR is merged
+  package: ""               # <project>-smk37.fwsc, <project>-smk37-elite.fwsc, <project>-smk37-mke.fwsc
+  usb_name: ""              # the USB / MIDI device name (keep the firmware's); every installer's filter includes it
   data_family: ""           # store owner tag (SMK_DATA_FAMILY in build.py, 1..7 of A-Z 0-9). Own family: other
                             # firmwares' data is cleared on a switch (and this one's on a switch back). The upstream
                             # family: data survives switching between fork and upstream. The owner decides.
-  boot_logo: ""             # fork only: the boot logo or intro; none in an upstream PR
-  credit: ""                # fork only: the credit line on the power-on screen
+  copyright: ""             # the porter's name in the new SMK files' headers, e.g. "M. Geisler (genkigenki/makkuro)"
+                            # The project's own name, logo and boot stay; no porter credit or branding on screen.
 
-models:                     # one package per model (MODEL=pro|elite|mke); the Felucca layer builds pro only,
-                            # see AGENTS.md step 7 to add the others
+models:                     # one package per model (MODEL=pro|elite|mke), all three from the start
   - pro                     # SMK-37 Pro; also used for Starrykey 37 Play (its name is too long for a package)
-  # - elite                 # SMK-37 Elite
-  # - mke                   # MKE-P37
+  - elite                   # SMK-37 Elite
+  - mke                     # MKE-P37
 
 keys:
   middle: fm1               # keys 5..31 (F3..G5) = the FM-1's 27 keys, velocity from the factory curves

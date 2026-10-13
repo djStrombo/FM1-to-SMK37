@@ -12,6 +12,7 @@ Things that went wrong in earlier ports, and the fix. Check this list before ste
 | Two objects share one A/B sector pair (told apart by a record type), so an address list shows one object. | Keep them sharing the pair under their own types, or give each its own pair. Extra objects go into `0xB1000-0xBAFFF`. |
 | The Felucca layer's `_Static_assert(OBJ_COUNT == 10u)` stops the build. | Intended: the fork has a new object. Give it a place, then extend the assert and the flash-map test. |
 | The owner-tag test fails after the family was changed. | `tests/smk_owner_test.c` may hard-code `SMK37DATAFELUCCA`; take the family from `FELUCCA_DATA_FAMILY` there too. A 7-letter family fills the 16-byte tag with no NUL: compare 16 bytes, not `sizeof` (17). |
+| The project's name has 8 letters or more (GHOULBOX); the family takes 1..7. | Shorten it (`GHOULBX`). |
 | A fork keeps its own data in "unused" settings bytes that a later upstream release uses (felucca-rainbow's song in `favorites.factory[14..15]`, Felucca 1.2's PRESETS LIST byte). | Share the upstream data family only if the settings layouts match byte for byte; otherwise give the port its own family. |
 | Cherry-picking the Felucca layer onto an older fork: the FM-1 half of `fm1_flash_map.h` carries 1.4.1's `FL_VBANK`, and the FM-1 store range grows. | Copy the FM-1 values from the fork's own `fm1_flash.h` into `fm1_flash_map.h`, never the layer's. Check the FM-1 hashes. |
 | The first boot clears the stock firmware's settings (untagged data). | Expected with `FELUCCA_DATA_UNTAGGED_OK 0`; calibration and the way back are safe. Tell the owner before the first install. |
@@ -22,12 +23,15 @@ Things that went wrong in earlier ports, and the fix. Check this list before ste
 | Pitfall | Fix |
 |---|---|
 | The SMK comes as SMK-37 Pro, SMK-37 Elite and MKE-P37; the stock updater only takes a unit's own model. | Build one package per model: `BOARD=smk37 MODEL=elite sh build.sh` (`pro`, `elite` or `mke`). Each reports its model's name, so the stock updater can restore the factory firmware. |
-| The Felucca layer has no `MODEL`; `MODEL=elite` is silently ignored and builds a Pro package. | Port Snoop37's per-model commit (`SMK_MODEL`), or ship the Pro build only and say so. |
+| An older layer (Felucca 1.5.1) has no `MODEL`; `MODEL=elite` is silently ignored and builds a Pro package. | Use the current layer (Felucca 1.6 or SLOOP 2.6), whose per-model commit adds `SMK_MODEL`. |
+| A per-model commit taken from another port hard-codes that port's names (Rainbow's family default and `rainbow37` stem). | Replace them in build.py, build.sh, BUILDING.md, run_tests.sh and `tests/smk_owner_test.c` with the project's: `<project>-smk37`. |
 | Starrykey 37 Play's name, `STARRYKEY-37 PLAY` plus a version, is 21 characters; a 20-block package identity holds 20. | Use the SMK-37 Pro build on it. Installers accept any SMK model's package on any SMK model (never FM-1 to SMK or back). Read the stock V016 package's identity past 20 blocks (it takes 21, then the unused 0x7D markers) and the device identity in full (bytes 6..32). |
+| Ports shipped as renamed products ("xxx37") with the porter's credit on the boot screen read as taking over someone else's work. | The SMK-37 build keeps the project's name, logo and boot; packages `<project>-smk37[-elite\|-mke].fwsc`; the goal is an upstream PR (AGENTS.md, "The goal"). |
 | The installer does not find a keyboard running another port. | Port-name filters must include every firmware's USB name. Add yours to the installers you ship. |
 | Another firmware's identity reply ends its text early; string compares fail. | Parse identities up to the first NUL byte. |
 | Windows shows MIDI ports as `MIDIIN2 (name)` and similar. | Match port names by substring, case-insensitive. |
-| The installer's `resume()` (device already in update mode) wrote any loader, while `install()` checked the model: with SMK loaders accepted, an SMK in update mode could get an FM-1 package (found in a SLOOP review; Felucca 1.1.5 forks have it too). | `resume()` takes the package identity and checks the loader's model by `install()`'s rule (equality, or the same-keyboard rule); without the identity it writes nothing. Every caller passes it. Test both: wrong model and no identity, nothing served. Reference: X0X37's fix and tests. |
+| The installer's `resume()` (device already in update mode) wrote any loader, while `install()` checked the model: with SMK loaders accepted, an SMK in update mode could get an FM-1 package (found in a SLOOP review; Felucca 1.1.5 forks have it too). | `resume()` takes the package identity and checks the loader's model by `install()`'s rule (equality, or the same-keyboard rule); without the identity it writes nothing. Every caller passes it. Test both: wrong model and no identity, nothing served. Reference: the layer's `web/fm1ota.js` and its tests (AGENTS.md, step 8). |
+| The fork changed `resume()` itself (GHOULBOX: a 4th argument `waitMs`, a reload path); the reference file and the fork's clash. | Take the reference file, re-add the fork's parts as options (`opts.waitMs`), convert every caller and test. The test harness's fake device differs per fork too. |
 
 ## Build and tests
 
@@ -42,6 +46,9 @@ Things that went wrong in earlier ports, and the fix. Check this list before ste
 | The firmware's own agent file says to merge or push automatically. | The kit's rules win: work on `smk37`, the owner merges and pushes. |
 | An upstream PR edited the live site: `docs/` is generated from `web/` by `make_site.py` and published by the maintainer (found in a SLOOP review). | A PR changes sources only. Leave `docs/` and other generated or published directories to the maintainer's build. Put SMK docs at the top level (`SMK37.md`) or elsewhere outside the published tree. |
 | A merged port broke the maintainer's browser emulator (`web/emu/build.sh`): the shared sources used `FL_JEDEC_OK` and `FM1_OCT_BOTH` from `hal/`, which the emulator does not include (found in a MAKU merge, reverted). | Build every target the repo has before a PR: the firmware, the emulator / simulator and what CI runs. Define new shared macros where the emulator can see them too (e.g. in `web/emu/*.c` with the FM-1's values). |
+| `web/emu/build.sh`: Permission denied in a fresh clone. | Run it with `sh web/emu/build.sh`. |
+| The web tests fail on Windows node (doubled drive-letter paths from `new URL(".", import.meta.url).pathname`, a drive colon in `path:key` arguments), or are skipped. | Run them in WSL with node on PATH there (emsdk's: `. ~/emsdk/emsdk_env.sh`). |
+| A test file written through a shell heredoc got real NUL and newline bytes where the C source had `\0` and `\n`. | Check generated sources for control bytes before committing (`grep -P '[\x00-\x08]'`). |
 | Host tests on glibc fail on `clock_gettime` and friends with `-std=c99`. | `CC='cc -D_DEFAULT_SOURCE' sh tests/run_tests.sh` (some forks need `-D_GNU_SOURCE`, others nothing). |
 
 ## Fork code
@@ -51,6 +58,10 @@ Things that went wrong in earlier ports, and the fix. Check this list before ste
 | A fork's own mode replaces `ui_input()`, `ui_leds()` and `ui_draw()` (felucca-rainbow's toy); the pads, faders, wheels, outer keys and extra buttons do nothing there. | Grep every reader of `fm1_in`, `panel_enc`, `fm1_input_edges` and every writer of `fm1_led*`; wire the SMK extras into each mode that owns the frame. |
 | A loop `for (id = 0; id < 14u; id++)` over the FM-1 buttons: on the SMK, FX, SEQ, PLAY and REC (ids 14..17) are dead. | Use `FM1_NBTN` (14 on the FM-1, 18 on the SMK). Grep forks for `14u`, `27u` and `14u + k`. |
 | A fork's LED code with `uint8_t nl[FM1_NCOL]` and key LED ids `14u + k` writes out of bounds on the SMK (`FM1_NCOL` is 16, LED ids go up to 63). | Write an SMK version of that LED function (button LEDs and pads), not just a recompile. |
+| The fork added its own power-on combos and flash checks with FM-1 values (GHOULBOX: USB RESCUE as `(buttons & 3u) == 1u`, JEDEC `== 0x856014u`); the layer's `FM1_OCT_BOTH` / `FL_JEDEC_OK` cover only Felucca's places. | Grep for `buttons & 3u`, `& 1u) ==`, `0x856014` and fix each (OCTAVE- is button 4 on the SMK). |
+| Fork code reads an `fm1_in` field the SMK input lacks (GHOULBOX's crank: `enc_dfr`), or counts in FM-1 frames (909/s; the SMK's are 625/s). | Add the field to `smk_input.h`; grep for frame-based timing constants. |
+| The fork refactored `key_on` (GHOULBOX: `key_on_to(t, note, chord, chn)`, no key index); the layer's `key_vel(k)` in `key_on(k)` no longer fits. | The caller passes the velocity in. |
+| Outer keys go straight to `input_on` / `input_off`: no chord, latch or split from the fork. | Route them through the fork's key_on / key_off helpers (own chord buffers, 10 slots); add them to features that list the held keys. |
 | A volume cap applied to the master level after `master_poll` leaves K1's virtual pot running past the cap; turning down then does nothing for many detents. | Clamp the virtual pot (`smk_master`) to the cap's pot value too (in Felucca master = pot^2 / 256). |
 
 ## Hardware

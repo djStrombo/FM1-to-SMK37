@@ -1,12 +1,12 @@
-# Snoop37: SLOOP (four-track looper groovebox) on the SMK-37. The reference port.
-# Keep the FM-1 workflow intact, give every new control an obvious job. Controls: Snoop37 docs/CONTROLS.md.
+# SLOOP (four-track looper groovebox) on the SMK-37. The reference port.
+# Keep the FM-1 workflow intact, give every new control an obvious job. Controls: SMK37.md on genkigenki/sloop-fm1 smk37.
 
 firmware:
-  name: Snoop37
+  name: SLOOP
   upstream: https://github.com/isod89/sloop-fm1
   base: SLOOP 2.5
   family: sloop
-  board_layer: snoop37
+  board_layer: sloop
   lost_on_smk: [TRS MIDI IN]
   priorities:
     - the SLOOP workflow unchanged, so the SLOOP manual still applies
@@ -15,11 +15,12 @@ firmware:
     - a hands-on mixer for the four tracks
 
 delivery:
-  mode: both                # own release (Snoop37) and the SLOOP PR isod89/sloop-fm1#112
+  mode: upstream
+  pr: isod89/sloop-fm1#112      # the hardware; #130 adds the optional Snoop37 look (SNOOP37=1, default off)
+  fork: genkigenki/sloop-fm1 smk37 (the look: snoop37)
+  package: sloop-smk37.fwsc     # -elite, -mke
   usb_name: Felucca         # SLOOP's USB product string; installers already know it
   data_family: SLOOP        # FELUCCA_DATA_FAMILY default; the owner tag at 0xAF000 keeps other ports out
-  boot_logo: Snoop37 intro and jingle (fork only, a BOOT LOGO setting)
-  credit: SMK-37 port by genkigenki
 
 models: [pro, elite, mke]
 

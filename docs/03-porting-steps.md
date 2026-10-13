@@ -2,11 +2,12 @@
 
 This walkthrough ports a Felucca-family FM-1 firmware to the SMK-37. The board layer comes in two forms:
 
-- **SLOOP forks:** the patch series from [Snoop37](https://github.com/genkigenki/Snoop37), branch `smk37-board`,
-  written against SLOOP 2.5.
-- **Felucca forks:** two commits on Felucca 1.5.1 (`ef1f561`), branch `smk37` of
-  [genkigenki/Felucca](https://github.com/genkigenki/Felucca): the board layer (hugelton/Felucca#237) and an
-  emulator fix.
+- **SLOOP forks:** branch `smk37` of [genkigenki/sloop-fm1](https://github.com/genkigenki/sloop-fm1)
+  (isod89/sloop-fm1#112), commits on SLOOP 2.6 (`8fad1a1`). For forks of SLOOP 2.5: the patch series on branch
+  `smk37-board` of the archived [Snoop37](https://github.com/genkigenki/Snoop37).
+- **Felucca forks:** branch `smk37` of [genkigenki/Felucca](https://github.com/genkigenki/Felucca)
+  (hugelton/Felucca#237), commits on Felucca 1.6 (`1727537`): the SMK-37 target, an emulator fix, `SMK37.md`,
+  the Elite and MKE-P37 builds, copyright lines.
 
 Both touch the same files; file names below are SLOOP's, Felucca's are mostly the same.
 
@@ -83,42 +84,49 @@ Many forks were started from a copy rather than a git fork. In that case, compar
 
 ## 2. Get the board layer
 
-**Felucca fork:** fetch the branch and cherry-pick all its commits on Felucca 1.5.1 (`ef1f561`), then go on with section 4:
+**Felucca fork:** fetch the branch and cherry-pick all its commits on Felucca 1.6 (`1727537`), then go on with section 4:
 
 ```sh
 git remote add ref https://github.com/genkigenki/Felucca.git && git fetch ref smk37
-git switch -c smk37 && git cherry-pick -x ef1f561..ref/smk37
+git switch -c smk37 && git cherry-pick -x 1727537..ref/smk37
 ```
+
+Then replace the layer's names with the project's: the package stem `felucca-smk37` (build.py, build.sh,
+BUILDING.md, run_tests.sh) and the `FELUCCA` family default (build.py, `tests/smk_owner_test.c`).
 
 Expect conflicts where the fork changed the build, the flash header, the UI input and the sequencer. A file the
 fork deleted (modify/delete conflict): keep it deleted and carry the SMK hunks to the fork's replacement.
 
-**Older Felucca forks** (RAINBOW37 started from 1.1.5, seven upstream commits before the layer's base):
+**Older Felucca forks.** Worked examples on genkigenki/Felucca: `rainbow-smk37` (Rainbow mode, a 1.1.5 fork) and
+`ghoulbox-smk37` (GHOULBOX, a 1.4.1 fork). Each is the layer's SMK-37 target and emulator fix, then the
+per-model and installer commits, adapted to the fork; take the one nearest your fork's base. What came up:
 
 - `fm6_vbank.c` (1.4.1) does not exist: `git rm` it and drop the FM6 voice bank hunks (`ST_SMK_VBANK`,
   `FVB_HOME`). 1.1.5 has the same 10 stored objects, so `OBJ_COUNT == 10` stays.
-- Auto-merged hunks may call 1.5 functions (`home_tap()`, `midi_pc_poll()`): remove or replace them.
+- Auto-merged hunks may call 1.5 functions (`home_tap()`, `midi_pc_poll()`) or list 1.5 build flags
+  (`FELUCCA_UAC_AS_FIRST` in build.py): remove or replace them.
 - The FM-1 half of `fm1_flash_map.h` takes the fork's own `fm1_flash.h` values, never the layer's: the layer's
   carries `FL_VBANK`, which grows the FM-1 store range and breaks byte identity.
-- Expect conflicts in `ui_input.c`, `seq.c`, `project.c`, `main.c`, `build.py`, `fm1_flash.h` and `fm1ota.js`.
+- Expect conflicts in `ui_input.c`, `seq.c`, `project.c`, `main.c`, `build.py`, `fm1_flash.h` and `fm1ota.js`
+  (1.1.5: 8 files; 1.4.1: 4 files, BUILDING.md, build.py, seq.c, ui_input.c).
 - `FL_JEDEC_OK` and `FM1_OCT_BOTH` replace literals in shared code; on the FM-1 they expand to the old literals.
   Check the FM-1 hashes right after the cherry-pick.
 
-**SLOOP fork:** the patch series.
+**SLOOP fork:** cherry-pick the SLOOP layer.
 
 ```sh
-git remote add snoop37 https://github.com/genkigenki/Snoop37.git
-git fetch snoop37
-git log --oneline --reverse <base>..snoop37/smk37-board
+git remote add ref https://github.com/genkigenki/sloop-fm1.git && git fetch ref smk37
+git switch -c smk37 && git cherry-pick -x 8fad1a1..ref/smk37
 ```
 
-`<base>` is the SLOOP release the branch starts from (its first commit message names it). Export the series:
+A fork of SLOOP 2.5 can use the older patch series instead (section 3):
 
 ```sh
-git format-patch <base>..snoop37/smk37-board -o ../smk37-patches
+git remote add snoop37 https://github.com/genkigenki/Snoop37.git && git fetch snoop37
+git format-patch <base>..snoop37/smk37-board -o ../smk37-patches   # <base>: the SLOOP release it starts from
 ```
 
-The series, in order, covers roughly these steps:
+Both cover roughly these steps:
 
 1. **System:** board switch, identities, flash map and allow-list, update path, package layout, installer
    changes, tests.
@@ -129,10 +137,10 @@ The series, in order, covers roughly these steps:
 6. **Controls:** one encoder step per detent, pad step display, outer keys, knob and fader layout, app slot size,
    pad colours, button LEDs.
 
-The Snoop37 branding (boot intro, jingle, its own screens) lives on `main`, behind the build flag `SNOOP37`,
-and is not part of the board series.
+The optional Snoop37 look (boot intro, jingle, its own screens) is on branch `snoop37`, behind the build flag
+`SNOOP37` (default off), and is not part of the layer.
 
-## 3. Apply it
+## 3. Apply the patch series (SLOOP 2.5 forks)
 
 On a new branch:
 
@@ -147,7 +155,7 @@ hand from the table below. Then continue with the rest.
 
 Cherry-picking works too: `git cherry-pick <base>..snoop37/smk37-board`.
 
-**For a fork without SLOOP or Felucca history** (a copied tree), take the Felucca commit as a model and apply
+**For a fork without SLOOP or Felucca history** (a copied tree), take the Felucca commits as a model and apply
 it file by file. New files (`smk_input.h`, `fm1_flash_map.h`, the SMK tests) go in unchanged. For the changed
 files, read each hunk and apply its intent.
 
@@ -217,8 +225,9 @@ sh tests/run_tests.sh                                     # the tests expect FM-
 The reference build writes `build/sloop-smk37.fwsc` (identity `SMK-37 Pro_900`). Check:
 
 - the app fits the `0x97400` slot (the linker fails otherwise). The Felucca layer costs about 1.8 KB of flash and
-  1.2 KB of RAM over the FM-1 build (RAINBOW37: 538,448 B vs 536,656 B; RAM 94,468 vs 93,220 of 98,304 B). A fork
-  with less than 2 KB of RAM left needs room first,
+  1.2 KB of RAM over the FM-1 build (Rainbow mode: 538,448 B vs 536,656 B; RAM 94,468 vs 93,220 of 98,304 B). A fork
+  with less than 2 KB of RAM left needs room first. A full fork fits: GHOULBOX 2.1 had 4.5 KB left in the FM-1
+  slot and its SMK image (578,400 B) sits well inside the SMK's 619,520 B,
 - the package identity is `SMK-37 Pro_9xx`,
 - the host tests show no new failures (the SMK tests: flash map, owner tag, package, update, loader). Most forks
   have no UI test for the SMK mapping; that part is checked on the device.
@@ -251,9 +260,10 @@ The reference build writes `build/sloop-smk37.fwsc` (identity `SMK-37 Pro_900`).
 
 ## 8. Release and roll back
 
-- Tag a release and build with the release version. The identity becomes `SMK-37 Pro_9XY`.
-- Ship only your firmware package and your source, under GPL-3.0 like the code it comes from. Never ship stock
-  firmware files or flash dumps.
-- An upstream pull request carries sources only. The maintainer builds and publishes the site (`docs/`); SMK docs
-  go at the top level (`SMK37.md`) or another unpublished place.
+- The goal is an upstream pull request ([AGENTS.md](../AGENTS.md), "The goal"): the project's own name and look,
+  `SMK37.md` at the top level and one README line, sources only. The maintainer builds and publishes the site
+  (`docs/`).
+- Until it is merged, release from your fork of the original: build with the release version (the identity
+  becomes `SMK-37 Pro_9XY`) and attach `<project>-smk37[-elite|-mke].fwsc`, under GPL-3.0 like the code it comes
+  from. Never ship stock firmware files or flash dumps. Archive the fork once the PR is merged.
 - To go back to stock: [02-update-and-recovery.md](02-update-and-recovery.md), section 6.

@@ -1,6 +1,6 @@
 # 04: Controls mapping
 
-How each FM-1 control and its SLOOP function lands on the SMK-37 in the reference port (Snoop37). Use it as
+How each FM-1 control and its SLOOP function lands on the SMK-37 in the reference port (SLOOP's SMK-37 build). Use it as
 a template for other firmwares. The FM-1 column and the SLOOP column hold for any SLOOP fork. For a Felucca fork,
 replace the SLOOP column with the fork's own functions.
 
@@ -9,7 +9,7 @@ The SMK's extra controls (outer keys, faders, wheels, spare buttons) add to that
 
 ## Knobs, faders, wheels
 
-| FM-1 (printed) | SLOOP function | SMK-37 (printed) | Snoop37 |
+| FM-1 (printed) | SLOOP function | SMK-37 (printed) | SLOOP on the SMK-37 |
 |---|---|---|---|
 | MASTER (pot, top left) | output volume | K1 | master volume (a virtual pot: 24 of 1024 steps per detent) |
 | SELECT (large encoder) | tempo on the TRACKS screen, page left/right, visualiser style, menu section | K2 | SELECT: tempo, pages |
@@ -26,7 +26,7 @@ The SMK's extra controls (outer keys, faders, wheels, spare buttons) add to that
 
 ## Buttons
 
-| FM-1 (printed) | SLOOP tap | SLOOP hold (layer) | SMK-37 (printed) | Snoop37 |
+| FM-1 (printed) | SLOOP tap | SLOOP hold (layer) | SMK-37 (printed) | SLOOP on the SMK-37 |
 |---|---|---|---|---|
 | PLAY | start / stop (LED flashes on the beat) | | SEQ PLAY | PLAY |
 | REC | record / arm | 2 s: clear track | SEQ REC | REC |
@@ -49,7 +49,7 @@ The SMK's extra controls (outer keys, faders, wheels, spare buttons) add to that
 
 ## Keys and pads
 
-| FM-1 | SLOOP | SMK-37 | Snoop37 |
+| FM-1 | SLOOP | SMK-37 | SLOOP on the SMK-37 |
 |---|---|---|---|
 | 27 keys F3..G5 | notes; in layers: tiles (steps, effects, mix, ...) | middle 27 keys F3..G5 | the same, with velocity |
 | none | | lowest 5 keys C3..E3 | synth tracks: notes. Drum track: C3 kick, D3 snare, E3 hi-hat (a black key plays its left white neighbour). |
@@ -57,7 +57,7 @@ The SMK's extra controls (outer keys, faders, wheels, spare buttons) add to that
 | LEDs under the 27 keys | what is on or playing | 16 RGB pads | the pads are the 16 **white** keys (as steps and tiles: top row 1..8, bottom row 9..16), with velocity. Lit in the screen's track colours (blue, green, yellow, orange): steps lit, playhead and hits bright, off is dark. SEL layer: piano layout. SAVE layer: used slots green, free slots white. |
 
 White key to pad. Hardware pads 0..7 are the top row, 8..15 the bottom row ([01-hardware.md](01-hardware.md), 6.3).
-Snoop37 uses two orders: as a step grid or tiles the pads read like text; as a keyboard the low notes are at the
+The SMK-37 build uses two orders: as a step grid or tiles the pads read like text; as a keyboard the low notes are at the
 bottom.
 
 | White key | F3 | G3 | A3 | B3 | C4 | D4 | E4 | F4 | G4 | A4 | B4 | C5 | D5 | E5 | F5 | G5 |

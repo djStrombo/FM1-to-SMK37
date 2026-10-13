@@ -22,13 +22,14 @@ and to develop for both boards from one source.
 2. **Answer the questions.** What should the 16 pads, 4 faders, 10 outer keys, wheels and knobs do? Claude
    writes your answers into [`smk37-port.yaml`](smk37-port.yaml); the [mapping patterns](docs/06-mapping-patterns.md)
    and the [examples](examples/) show the options.
-3. **Let it build.** Claude works through [`AGENTS.md`](AGENTS.md): baseline build, the board layer (the Snoop37
-   series for SLOOP forks, the Felucca commit for Felucca forks), storage, controls, both builds, tests. It stops after each area, so you can check what it did. The FM-1 build
-   stays byte-identical.
+3. **Let it build.** Claude works through [`AGENTS.md`](AGENTS.md): baseline build, the board layer (the SLOOP
+   commits for SLOOP forks, the Felucca commits for Felucca forks), storage, controls, all three models, tests.
+   It stops after each area, so you can check what it did. The FM-1 build stays byte-identical.
 4. **You do the hardware.** Full flash backup first, then install, play, and tell Claude what works and what
    doesn't (or paste the serial console). It fixes, rebuilds, you install again.
-5. **Ship it.** Your own release, a pull request to the original firmware (everything sits behind
-   `BOARD_SMK37`), or both.
+5. **Send it upstream.** A pull request to the original firmware: everything behind `BOARD_SMK37`, the project's
+   own name and look, a neutral `SMK37.md` and one README line. Until it is merged, the build lives in your fork
+   of the original, with its releases there.
 
 Any other coding agent that can read `AGENTS.md` and run a shell works too. At your own risk, as always.
 
@@ -37,11 +38,13 @@ Any other coding agent that can read `AGENTS.md` and run a shell works too. At y
 | Port | From | What the SMK adds | Upstream |
 |---|---|---|---|
 | [Makkuro37](https://github.com/genkigenki/Makkuro37) | new firmware | pads gate eight drone voices, a CHAOS pad, fader banks | |
-| [Snoop37](https://github.com/genkigenki/Snoop37) | [SLOOP](https://github.com/isod89/sloop-fm1) | pads in track colours, pad sound picker, fader banks, outer-key drums. The reference port. | [isod89/sloop-fm1#112](https://github.com/isod89/sloop-fm1/pull/112) |
-| [X0X, SMK-37 build](https://github.com/genkigenki/fm1-x0x) | [fm1-x0x](https://github.com/charlesvestal/fm1-x0x) | pads as a 16-step grid | [charlesvestal/fm1-x0x#13](https://github.com/charlesvestal/fm1-x0x/pull/13) |
-| [FoMni, SMK-37 build](https://github.com/genkigenki/fm1-fomni) | [fm1-fomni](https://github.com/charlesvestal/fm1-fomni) | pads as a strum plate, keybed holds the chords | [charlesvestal/fm1-fomni#2](https://github.com/charlesvestal/fm1-fomni/pull/2) |
-| [RAINBOW37](https://github.com/genkigenki/RAINBOW37) | [felucca-rainbow](https://github.com/joshbartlettband-web/felucca-rainbow) | a toy for children: pads in note colours, a volume cap on K1, no menus; the full Felucca behind a combo | [joshbartlettband-web/felucca-rainbow#1](https://github.com/joshbartlettband-web/felucca-rainbow/pull/1) |
-| Felucca | [Felucca](https://github.com/hugelton/Felucca) | the SMK-37 as a build target | [hugelton/Felucca#237](https://github.com/hugelton/Felucca/pull/237) |
+| [SLOOP, SMK-37 build](https://github.com/genkigenki/sloop-fm1/tree/smk37) | [SLOOP](https://github.com/isod89/sloop-fm1) | pads in track colours, pad sound picker, fader banks, outer-key drums. The reference port. | [isod89/sloop-fm1#112](https://github.com/isod89/sloop-fm1/pull/112) (hardware), [#130](https://github.com/isod89/sloop-fm1/pull/130) (optional Snoop37 look, branch [snoop37](https://github.com/genkigenki/sloop-fm1/tree/snoop37)) |
+| [X0X, SMK-37 build](https://github.com/genkigenki/fm1-x0x/tree/smk37) | [fm1-x0x](https://github.com/charlesvestal/fm1-x0x) | pads as a 16-step grid | [charlesvestal/fm1-x0x#13](https://github.com/charlesvestal/fm1-x0x/pull/13) |
+| [FoMni, SMK-37 build](https://github.com/genkigenki/fm1-fomni/tree/smk37) | [fm1-fomni](https://github.com/charlesvestal/fm1-fomni) | pads as a strum plate, keybed holds the chords | [charlesvestal/fm1-fomni#2](https://github.com/charlesvestal/fm1-fomni/pull/2) |
+| [MAKU, SMK-37 build](https://github.com/genkigenki/Felucca/tree/maku-smk37-2) | [maku](https://github.com/okumurari2/maku) | an ambience machine: verbs on the buttons and wheels | [okumurari2/maku#4](https://github.com/okumurari2/maku/pull/4) |
+| [Rainbow mode, SMK-37 build](https://github.com/genkigenki/Felucca/tree/rainbow-smk37) | [felucca-rainbow](https://github.com/joshbartlettband-web/felucca-rainbow) | a toy for children: pads in note colours, a volume cap on K1, no menus; the full Felucca behind a combo | [joshbartlettband-web/felucca-rainbow#1](https://github.com/joshbartlettband-web/felucca-rainbow/pull/1) |
+| [GHOULBOX, SMK-37 build](https://github.com/genkigenki/Felucca/tree/ghoulbox-smk37) | [ghoulbox-fm1-dungeon-synth](https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth) | outer keys through the key path (chords, drone latch, splits), fader banks | [jasonpersinger/ghoulbox-fm1-dungeon-synth#5](https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth/pull/5) |
+| [Felucca, SMK-37 build](https://github.com/genkigenki/Felucca/tree/smk37) | [Felucca](https://github.com/hugelton/Felucca) | the SMK-37 as a build target | [hugelton/Felucca#237](https://github.com/hugelton/Felucca/pull/237) |
 
 All of them install from the browser at **[genkigenki.github.io/smk37](https://genkigenki.github.io/smk37/)**.
 
@@ -62,24 +65,24 @@ carry it over to any Felucca-family firmware.
 
 ## Reference implementation
 
-[**Snoop37**](https://github.com/genkigenki/Snoop37) is a SLOOP-based firmware for the SMK-37, and it is
-the working reference for this guide.
+The SMK-37 build of SLOOP, in the fork [genkigenki/sloop-fm1](https://github.com/genkigenki/sloop-fm1), is the
+working reference for this guide.
 
-- `main` holds the full firmware: SLOOP plus the SMK board layer plus Snoop37's own additions (boot intro,
-  jingle, layout choices).
-- **`smk37-board`** holds only the board port, as a patch series on top of SLOOP. It contains the board
-  switch, flash map, update path, input HAL, display, pad LEDs, wheels and UI mapping. Apply this series when
-  you port a SLOOP fork. [docs/03-porting-steps.md](docs/03-porting-steps.md) explains how.
+- **`smk37`** (isod89/sloop-fm1#112) holds the board layer as commits on SLOOP 2.6: board switch, flash map,
+  update path, input HAL, display, pad LEDs, wheels, UI mapping, the Elite and MKE-P37 builds, `SMK37.md`. Apply
+  it when you port a SLOOP fork. [docs/03-porting-steps.md](docs/03-porting-steps.md) explains how.
+- **`snoop37`** adds the optional Snoop37 look (`SNOOP37=1`, isod89/sloop-fm1#130); the default build stays SLOOP.
 
-For **Felucca forks**, the same board layer exists as one commit on Felucca main: branch `smk37` of
-[genkigenki/Felucca](https://github.com/genkigenki/Felucca), the pull request hugelton/Felucca#237.
+For **Felucca forks**, the same layer is branch `smk37` of [genkigenki/Felucca](https://github.com/genkigenki/Felucca)
+(hugelton/Felucca#237), commits on Felucca 1.6. The branches `rainbow-smk37` (1.1.5 fork), `ghoulbox-smk37`
+(1.4.1 fork) and `maku-smk37-2` there show it on other Felucca forks.
 
 ## What can be ported
 
 | Firmware | Base | Effort |
 |---|---|---|
-| SLOOP, sloopDX and other SLOOP forks | SLOOP | Low. The patch series was written against SLOOP 2.5, so most patches apply with `git am -3`. Conflicts appear mainly where the fork changed the UI code. |
-| Felucca and its direct forks (X0X, FoMni-1, Melodee, Jangada, ...) | Felucca | Medium. Cherry-pick the one Felucca commit (branch `smk37` of [genkigenki/Felucca](https://github.com/genkigenki/Felucca), = hugelton/Felucca#237); conflicts appear where the fork changed the build, flash header and UI. Storage and the UI mapping follow the fork's own objects and layout. |
+| SLOOP, sloopDX and other SLOOP forks | SLOOP | Low. Cherry-pick the SLOOP layer (branch `smk37` of [genkigenki/sloop-fm1](https://github.com/genkigenki/sloop-fm1), on SLOOP 2.6). Conflicts appear mainly where the fork changed the UI code. |
+| Felucca and its direct forks (X0X, FoMni-1, MAKU, Rainbow mode, GHOULBOX, Melodee, ...) | Felucca | Medium. Cherry-pick the Felucca layer (branch `smk37` of [genkigenki/Felucca](https://github.com/genkigenki/Felucca), on Felucca 1.6, = hugelton/Felucca#237); conflicts appear where the fork changed the build, flash header and UI. Storage and the UI mapping follow the fork's own objects and layout. |
 | Firmware that does not use the Felucca HAL (`firmware/hal/fm1_*.h`) | other | High. Use [docs/01-hardware.md](docs/01-hardware.md) as a datasheet and write the board layer yourself. |
 
 Expect about one evening for a SLOOP fork if you already have a working build setup. A Felucca fork with its own
@@ -129,7 +132,7 @@ calibration.
 | [docs/01-hardware.md](docs/01-hardware.md) | The SMK-37 hardware map compared with the FM-1: SoC, flash, display, pad LEDs, key matrix, velocity, buttons, encoders, ADC muxes, faders, wheels, pedal, battery, audio, MIDI out, USB |
 | [docs/02-update-and-recovery.md](docs/02-update-and-recovery.md) | Update protocol, package format, full flash backup, install, recovery, return to stock |
 | [docs/03-porting-steps.md](docs/03-porting-steps.md) | Step by step: source, patch series, conflicts, UI mapping, build, test on the device, install, rollback |
-| [docs/04-controls-mapping.md](docs/04-controls-mapping.md) | FM-1 to SLOOP to SMK-37 to Snoop37 control tables |
+| [docs/04-controls-mapping.md](docs/04-controls-mapping.md) | FM-1 to SLOOP to SMK-37 control tables (SLOOP as the example) |
 | [docs/05-reverse-engineering.md](docs/05-reverse-engineering.md) | How the facts were obtained, and how to reproduce them with public tools |
 | [docs/06-mapping-patterns.md](docs/06-mapping-patterns.md) | Mapping patterns that worked: pads, faders, outer keys, wheels, knobs, buttons, screen rules |
 | [docs/07-develop-for-both.md](docs/07-develop-for-both.md) | One source for both boards: capability layer, build and test matrix |
@@ -169,8 +172,7 @@ This guide builds on the work of many people:
 The text and tables of this guide are licensed under
 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). See [LICENSE](LICENSE).
 
-The firmware code and patches this guide refers to (Felucca, SLOOP, Snoop37 and the `smk37-board` patch
-series) are **not** part of this repository. They are licensed under **GPL-3.0** in their own repositories, and
-their licenses apply to them.
+The firmware code this guide refers to (Felucca, SLOOP and their SMK-37 layers) is **not** part of this
+repository. It is licensed under **GPL-3.0** in its own repositories, and those licenses apply to it.
 
 M-Vave, SMK-37 Pro and FM-1 are names of their respective owners. This project is not affiliated with M-Vave or JieLi.

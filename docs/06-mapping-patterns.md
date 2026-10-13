@@ -23,19 +23,19 @@ bottom row (hardware pads 8..15). The hardware index is the same for hits and LE
 | Control | Pattern | Used in | Choose it when |
 |---|---|---|---|
 | Keys | [Middle 27 = FM-1 keys](#keys-the-fm-1-range-in-the-middle) | all ports | always |
-| Outer keys | [Extend, drums on a drum track](#outer-keys-extend-and-drums) | Snoop37 | the firmware has a drum track or a range limit |
-| Pads | [Steps in reading order](#pads-steps-in-reading-order) | Snoop37, X0X37, Felucca PR | the firmware has a 16-step sequencer |
-| Pads | [Sound picker](#pads-sound-picker) | Snoop37 | many presets, chosen by scrolling on the FM-1 |
+| Outer keys | [Extend, drums on a drum track](#outer-keys-extend-and-drums) | SLOOP | the firmware has a drum track or a range limit |
+| Pads | [Steps in reading order](#pads-steps-in-reading-order) | SLOOP, X0X, Felucca PR | the firmware has a 16-step sequencer |
+| Pads | [Sound picker](#pads-sound-picker) | SLOOP | many presets, chosen by scrolling on the FM-1 |
 | Pads | [Voices and a CHAOS pad](#pads-voices-and-a-big-gesture) | Makkuro37 | a drone or multi-voice instrument |
-| Pads | [Strum plate](#pads-strum-plate) | FoMni37 | a chord instrument |
-| Faders | [Banks with soft takeover](#faders-banks-with-soft-takeover) | Snoop37, Makkuro37, FoMni37 | per-track settings, more than four jobs |
+| Pads | [Strum plate](#pads-strum-plate) | FoMni | a chord instrument |
+| Faders | [Banks with soft takeover](#faders-banks-with-soft-takeover) | SLOOP, Makkuro37, FoMni | per-track settings, more than four jobs |
 | Faders | [What has no direct control](#faders-what-has-no-direct-control) | | the knobs already reach every parameter on screen |
 | Wheels | [Bend and vibrato, or a macro](#wheels-bend-and-vibrato-or-a-macro) | all ports | always |
-| Knobs | [The FM-1 top row](#knobs-the-fm-1-top-row) | Snoop37, X0X37, FoMni37 | keeping the FM-1 workflow |
+| Knobs | [The FM-1 top row](#knobs-the-fm-1-top-row) | SLOOP, X0X, FoMni | keeping the FM-1 workflow |
 | Knobs | [A page per button, eight columns](#knobs-a-page-per-button-eight-columns) | Makkuro37 | a redesign with many parameters per voice |
-| Buttons | [Printed meaning, four extras](#buttons-printed-meaning-and-four-extras) | Snoop37, X0X37, FoMni37 | the firmware names its buttons by function |
+| Buttons | [Printed meaning, four extras](#buttons-printed-meaning-and-four-extras) | SLOOP, X0X, FoMni | the firmware names its buttons by function |
 | Buttons | [By row](#buttons-by-row) | | the firmware groups its buttons by row (one row of verbs, one of modes) |
-| Whole port | [A toy for children](#a-toy-for-children) | RAINBOW37 | a firmware for kids, or any safe-by-default instrument |
+| Whole port | [A toy for children](#a-toy-for-children) | Rainbow mode | a firmware for kids, or any safe-by-default instrument |
 
 ## Keys: the FM-1 range in the middle
 
@@ -51,7 +51,7 @@ The 10 outer keys (C3-E3, G#5-C6) extend the keyboard by default: on a synth tra
 track they play drums, so you can finger-drum while the middle keys keep their FM-1 job. A black key plays its left
 white neighbour.
 
-- **Snoop37:** C3 kick, D3 snare, E3 hi-hat; G#5 cowbell, A5 open hi-hat, B5 crash, C6 ride.
+- **SLOOP:** C3 kick, D3 snare, E3 hi-hat; G#5 cowbell, A5 open hi-hat, B5 crash, C6 ride.
 - **Choose:** extend when the firmware plays notes; drums when it has a drum track; transpose or off when the
   middle keys are tiles most of the time.
 - **Watch:** an outer-key drum hit lights no pad (the pads show steps).
@@ -65,7 +65,7 @@ bottom (hardware pads 0..7 and 8..15). Convert in one place, for hits and LEDs a
 screen's track colours: steps that are on are lit, the playhead and hits bright, off is dark (no glow layers).
 Pads play with velocity.
 
-- **Used in:** Snoop37 (also a piano layout in the SEL layer, save slots in the SAVE layer), X0X37 (the step
+- **Used in:** SLOOP (also a piano layout in the SEL layer, save slots in the SAVE layer), X0X (the step
   grid), the Felucca PR.
 - **Choose:** the firmware sequences 16 steps, or its white keys are tiles. This is the default.
 
@@ -77,7 +77,7 @@ Turning the sound knob (K4, PRESETS) shows the sounds of one kind on the pads an
 previews, `<` `>` page through the kinds, and a button (KNOB BANK) pins the picker open. After a knob turn it stays
 for a short time, then the pads go back to steps.
 
-- **Used in:** Snoop37.
+- **Used in:** SLOOP.
 - **Choose:** the firmware has many presets that the FM-1 can only scroll through.
 
 ## Pads: voices and a big gesture
@@ -97,7 +97,7 @@ screen. One pad does a big gesture (CHAOS) that is hard to do with knobs.
 The pads are 16 strings: top row low, bottom row high. The keybed holds the chord; a finger across a row strums
 it. A string lights while it rings; at rest the root strings glow dimly. Velocity sets loudness and brightness.
 
-- **Used in:** FoMni37 (the Omnichord-style chord harp).
+- **Used in:** FoMni (the Omnichord-style chord harp).
 - **Choose:** a chord instrument, an arpeggiator or anything played by sweeping.
 
 ## Faders: banks with soft takeover
@@ -109,7 +109,7 @@ Fader i sets track i, in the track's colour. FADER BANK picks what they set: **A
 moves, also after a bank change, so nothing jumps. A FADER BANK screen shows all four banks; its LED is lit off
 bank A.
 
-- **Used in:** Snoop37 (as above), Makkuro37 (banks FX L, FX R, LFO, PLAY, OUTPUT), FoMni37 (banks A and B).
+- **Used in:** SLOOP (as above), Makkuro37 (banks FX L, FX R, LFO, PLAY, OUTPUT), FoMni (banks A and B).
 - **Choose:** per-track settings, or more than four things worth a fader.
 
 ## Faders: what has no direct control
@@ -124,8 +124,8 @@ firmware's parameters, cross out what a knob or button already reaches, and offe
 
 ![Wheels](../assets/panel/wheels.svg)
 
-Pitch wheel = bend (Snoop37: +-7 semitones on the selected track; FoMni37: +-2). Mod wheel = vibrato (Snoop37:
-10 Hz, up to +-1 semitone, up = more; FoMni37: 5.5 Hz, up to +-1/2 semitone), or one performance macro. The
+Pitch wheel = bend (SLOOP: +-7 semitones on the selected track; FoMni: +-2). Mod wheel = vibrato (SLOOP:
+10 Hz, up to +-1 semitone, up = more; FoMni: 5.5 Hz, up to +-1/2 semitone), or one performance macro. The
 wheels calibrate themselves: centre taken at power-on, the range widens as the wheel is seen to move, with a dead
 band around the centre.
 
@@ -136,11 +136,11 @@ band around the centre.
 ![Knobs as the FM-1 top row](../assets/panel/knobs.svg)
 
 K1-K8 are the FM-1's knobs: K1 is a virtual MASTER pot (the FM-1's pot is absolute; K1 is an encoder, so it
-steps a stored value, 24 of 1024 per detent in Snoop37), K2-K4 the encoders, K5-K8 the screen's four dials in
+steps a stored value, 24 of 1024 per detent in SLOOP), K2-K4 the encoders, K5-K8 the screen's four dials in
 their colours. One encoder step per detent. Keep the order the firmware's screen uses: SLOOP shows SELECT,
 ALGORITHM, PRESETS (K2, K3, K4); a firmware that shows SELECT, PRESETS, ALGORITHM keeps that order.
 
-- **Used in:** Snoop37, X0X37, FoMni37.
+- **Used in:** SLOOP, X0X, FoMni.
 - **Choose:** keeping the FM-1 workflow. Matching knob caps make it obvious.
 
 ## Knobs: a page per button, eight columns
@@ -174,12 +174,12 @@ right. The printed names then no longer match, so the screen and the controls ta
 
 ## A toy for children
 
-A firmware a child plays alone. Used in RAINBOW37 (Rainbow mode, with the full Felucca behind a combo).
+A firmware a child plays alone. Used in Rainbow mode (with the full Felucca behind a combo).
 
 - **Volume cap.** The grown-ups set a cap; K1 never goes above it. K1 is a virtual pot, so clamp the pot value
   (`smk_master`) as well as the level, or turning down does nothing for many detents.
 - **Fixed velocity.** The layer reads velocity in `key_vel` and in the outer-key queue. Put one switch there
-  (RAINBOW37: `SMK_KEY_VELOCITY 0` = every key and pad at 100) instead of editing each place.
+  (Rainbow mode: `SMK_KEY_VELOCITY 0` = every key and pad at 100) instead of editing each place.
 - **No menu from the toy.** No stray press opens a menu (not KNOB BANK either). The grown-up controls (a held
   button, a long combo) are hidden on purpose: the owner's exception to "no hidden modes", noted in the setup file.
 - **Two UIs.** The toy and the full firmware each get their own mapping (`modes:` in the setup file).

@@ -1,20 +1,21 @@
-# RAINBOW37: Rainbow mode (a Felucca 1.1.5 fork) on the SMK-37, a toy for children with the full Felucca behind
-# a combo. Controls: RAINBOW37 SMK37.md.
+# Rainbow mode (a Felucca 1.1.5 fork) on the SMK-37, a toy for children with the full Felucca behind a combo.
+# Branch genkigenki/Felucca rainbow-smk37, PR joshbartlettband-web/felucca-rainbow#1. Controls: its SMK37.md.
 
 firmware:
-  name: RAINBOW37
+  name: Rainbow mode
   upstream: https://github.com/joshbartlettband-web/felucca-rainbow
   base: Felucca 1.1.5 + Rainbow mode
   family: felucca
-  board_layer: felucca          # genkigenki/Felucca smk37 (2 commits), adapted to 1.1.5 (no FM6 voice bank)
+  board_layer: felucca          # the Felucca layer, adapted to 1.1.5 (no FM6 voice bank)
   lost_on_smk: [TRS MIDI IN / clock in]
 
 delivery:
-  mode: fork                    # own fork first, an upstream PR later
+  mode: upstream
+  pr: joshbartlettband-web/felucca-rainbow#1
+  fork: genkigenki/Felucca rainbow-smk37
+  package: rainbow-smk37.fwsc   # -elite, -mke
   usb_name: Felucca             # unchanged: installers and the editor find it
   data_family: RAINBOW          # not FELUCCA: Rainbow borrows settings bytes later Felucca releases use
-  boot_logo: Rainbow's hello, with RAINBOW37 and the port credit
-  credit: "SMK-37 port by genkigenki"
 
 models: [pro, elite, mke]       # MODEL=pro|elite|mke; Starrykey 37 Play uses the Pro build
 
