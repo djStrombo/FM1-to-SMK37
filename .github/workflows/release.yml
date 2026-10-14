@@ -75,7 +75,7 @@ jobs:
           # Pillow's wheels carry Raqm and load FriBiDi at run time; without it the UI font loses its kerning
           sudo apt-get update -q
           sudo apt-get install -y -q --no-install-recommends libfribidi0 libraqm0 zip
-          python3 -m pip install --disable-pip-version-check "Pillow==$PILLOW_VERSION" "fonttools==$FONTTOOLS_VERSION"
+          python3 -m pip install --disable-pip-version-check "Pillow==$PILLOW_VERSION" "fonttools==$FONTTOOLS_VERSION" "numpy"
           python3 -c 'from PIL import features; import sys; ok = features.check("raqm"); print("raqm", features.version("raqm"), "fribidi", features.version("fribidi")); sys.exit(0 if ok else "Pillow has no Raqm layout (libfribidi missing?)")'
 
       - name: Cache the JieLi toolchain
