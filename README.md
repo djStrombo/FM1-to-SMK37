@@ -137,6 +137,7 @@ calibration.
 | [docs/06-mapping-patterns.md](docs/06-mapping-patterns.md) | Mapping patterns that worked: pads, faders, outer keys, wheels, knobs, buttons, screen rules |
 | [docs/07-develop-for-both.md](docs/07-develop-for-both.md) | One source for both boards: capability layer, build and test matrix |
 | [docs/08-pitfalls.md](docs/08-pitfalls.md) | What went wrong in earlier ports, and the fix |
+| [docs/10-smk37-to-fm1.md](docs/10-smk37-to-fm1.md) | The reverse port: a firmware made for the SMK-37 gets an FM-1 target |
 | [AGENTS.md](AGENTS.md) | The agent playbook: questions, then baseline to release, with hard rules |
 | [smk37-port.yaml](smk37-port.yaml) | The setup file: every mapping decision for one port; filled examples in [examples/](examples/) |
 | [assets/smk37-panel.png](assets/smk37-panel.png) | The SMK-37 panel map (SVGs in [assets/panel/](assets/panel/), drawn by `tools/make_panels.py`) |

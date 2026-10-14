@@ -1,0 +1,111 @@
+# Polly (a QY70-style pocket arranger, X0X / FoMni-1 / AMB-1 family on Felucca's platform, Sonivox EAS GM synth)
+# on the SMK-37, as an upstream PR. The keybed is the instrument (chords steer the band); its shortcuts (HOME held +
+# a key) moved to the pads. Controls: SMK37.md on the branch smk37.
+
+firmware:
+  name: Polly                   # unchanged on the SMK-37: same name, boot ("A pocket arranger") and manual
+  upstream: https://github.com/charlesvestal/fm1-polly
+  base: Polly 0.4 (2e8a2bf)
+  family: x0x                   # app/{plat_fm1,panel,main_fm1,ui,pages}.c, host/polly_host.c, web/emu
+  board_layer: amb              # ambport/fm1-amb smk37 (60dfbec..smk37), git apply -3 of the platform files
+  lost_on_smk: [TRS MIDI IN / clock in, the QY70 style bank]
+  priorities:
+    - the arranger workflow and manual unchanged (HOME held + a key still works on the keybed)
+    - sections and progressions without a modifier
+
+delivery:
+  mode: upstream
+  pr: draft (pollyport/pr-body.md); tested on an SMK-37 Pro (pad rework not re-tested)
+  package: polly-smk37.fwsc     # -elite, -mke
+  identity: SMK-37 Pro_300      # Polly's FM-1 identity is FM-1_300
+  usb_name: Polly SMK-37        # "smk" is in every installer filter
+  data_family: POLLY
+
+models: [pro, elite, mke]
+
+storage:
+  objects: 19                   # project, panel, songs, 16 memory slots: 38 sectors, more than 0x9D000..0xAEFFF
+  layout:
+    - 0x9D000..0xAEFFF: project, panel, songs, slots 1-6
+    - 0xAF000: owner tag
+    - 0xB0000..0xB9FFF: slots 7-11
+    - 0xC2000..0xCBFFF: slots 12-16 (USRFLASH, FL_EXT)
+  owner_change_clears: all three windows (one list, ST_SMK_REGION)
+  qy70_bank: dropped            # 64 sectors; with the store 102 + tag + staging, the allowed windows hold 69
+  restore_journal: 0xBC000      # backup.c RS_REC: the staging's 2nd sector, as on the FM-1
+
+keys:
+  middle: fm1                   # chords (Home, Progression), the instrument (Band, Sound, Notes), functions on Song / Mixer
+  outer: extend                 # UI keys 27..36 in the same key path (NKEYS_UI, kbits_t): chords and notes
+  velocity: factory             # band instruments; a melody keeps its own VELOCITY setting
+
+pads:
+  pattern: function_keys        # the HOME-held shortcuts, without HOME
+  map:
+    top: [Intro, Groove A, Groove B, Fill, Ending, FOLLOW, (free, dark), half toggle P1-P8 / P9-P16]
+    bottom: [eight progressions of the half]                                 # white keys 1-16 as functions
+  behaviour: >-
+    a pad is the key it replaces as a function: sections = HOME + black key (home_key); progressions = a white
+    key's job in that context (HOME held: shortcut; SAVE held: copy_to; Song page: song_key; else the shortcut)
+  colours: >-
+    sections and FOLLOW light green; progressions blue (P1-P8) or yellow (P9-P16), the toggle pad in the active
+    half's colour; dim idle, bright playing (stopped: where PLAY starts); a change waiting for the bar line: the
+    playing pad blinks, the target light orange; empty progressions dark
+  lesson: >-
+    first version (screen colours: teal playing, coral next, white where PLAY starts, slate / amber dim, two pads
+    for the halves) was confusing on the unit. Owner: one colour per group (sections green, each progression half
+    its own colour), one toggle pad for the half, a waiting change shown by blinking the playing pad
+
+faders:
+  pattern: banks
+  takeover: on_move
+  banks:
+    A: [D1 vol, D2 vol, PC vol, BA vol]      # the Mixer's VOLUME (trk_set on the groove playing: as the knob)
+    B: [C1 vol, C2 vol, C3 vol, C4 vol]
+    C: [M1 vol, M2 vol, reverb level, chorus level]
+  screen: header message (say)  # "BA VOLUME 100"
+
+wheels:
+  pitch: {target: bend, range_semitones: 2, applies_to: every channel but 10}   # EAS's default sensitivity
+  mod: {target: vibrato, detail: "CC 1 to every channel but 10: EAS's LFO, up to 50 cents"}
+  resend: every 250 ms while away from rest   # the arranger resets controllers at section starts
+
+knobs:
+  layout: fm1
+
+buttons:
+  map: printed
+  extra:
+    KNOB BANK: the pads' map pinned (draw_home_held without HOME held)
+    FADER BANK: A / B / C (LED lit off A); closes the map
+    "<": SELECT -1 (pages, list rows, Notes' notes)
+    ">": SELECT +1
+
+lessons:
+  - "A charlesvestal firmware: the AMB-1 port's layer applies with git apply -3 (fetch ambport as a remote, diff
+    60dfbec..amb/smk37 for the platform files only). Conflicts were in the files the fork grew: ldr_window.h,
+    main.c (the QY70 bank), storage.c, ldr_test.c, build.py. Rename the stem, family, identity number, USB name,
+    panel magic, and strip the AMB names and e-mail addresses afterwards (grep)."
+  - "fm1pkg_make.py's BOARDS table holds the FM-1 identity (FM-1_700 in AMB): set it to the fork's (FM-1_300) or
+    the FM-1 package changes."
+  - "Count the sectors before the mapping: Polly needs 38 store sectors plus a 64-sector QY70 bank; the allowed
+    windows hold 69. The bank went (refused in bank_rx before anything is erased, and in bk_erase / bk_prog as a
+    second net: the FM-1 bank regions overlap the SMK store there); the store got three windows, all cleared on an
+    owner change."
+  - "A fork with its own loader window (ldr_window.h: only staging and the stock record sector are cleared) needs an
+    SMK branch there: the SMK stock record's place is not known, so the SMK loader clears any whole record in the VM
+    (CRC-checked, as the layer); the ldr_test runs for both boards with T_ macros."
+  - "Relocate every other fixed flash address the fork uses (backup.c's restore journal RS_REC 0xE1000)."
+  - "Keybed modifier shortcuts (HOME + 16 white + 5 black keys) are more than 16 pads: keep the firmware's own
+    order (the HOME-held screen's), and use two pads as the half selector of the progressions' row instead of a
+    hidden bank mode."
+  - "Outer keys into a 27-key UI: widen the per-key arrays and bitmasks behind a macro that expands to the old text
+    on the FM-1 (NKEYS_UI = NKEYS, kbits_t = uint32_t, (kbits_t)1 << k): byte-identical."
+  - "A GM synth: the wheels are plain MIDI to the synth (bend, CC 1); re-send them while held, the arranger resets
+    controllers at section starts. Rate-limit (30 messages per change into a 256-entry queue)."
+  - "The host's msg_is_ expect compares the raw text: no '_' for spaces there."
+  - "install_test.py removes its TMP dir before the end: a test added after needs its own mkdir."
+  - "A build check may scan the sources for MMIO-looking hex constants (Polly's build.py: 0x040818u read as a register
+    address outside hal/). Write pad colours with an RGB macro of decimals, not packed hex."
+  - "On the pads, screen colours did not carry over: give each pad group one colour of its own and show state by
+    brightness and blinking, not by a different hue per state."

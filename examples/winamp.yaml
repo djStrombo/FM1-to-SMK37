@@ -1,0 +1,96 @@
+# winampFM Synth (a Winamp 2.x-style SLOOP 2.6 fork by Hericdk) on the SMK-37, as an upstream PR.
+# A SLOOP copy without git history, the firmware tree one level down (firmware/firmware/src), its own big player UI
+# (ui_winamp.c), a 3D simulator (wasm) and the site at the repository root. Controls: SMK37.md on branch smk37.
+
+firmware:
+  name: winampFM                # unchanged on the SMK-37: name, boot (its line says "SYNTH FOR THE SMK-37"), skin
+  upstream: https://github.com/hericdk/winampFM
+  site: https://hericdk.github.io/winampFM/
+  base: winampFM v0.1 (SLOOP 2.6, no shared history; firmware/ = SLOOP's repository root)
+  family: sloop
+  board_layer: sloop            # genkigenki/sloop-fm1 smk37 (8fad1a1..smk37), git apply -3 --directory=firmware
+  lost_on_smk: [TRS MIDI IN / clock in, user sample slots USR3 and USR4, KEYBOARD LED effects, BRIGHTNESS]
+  priorities:
+    - the player, playlist, EFFECTS sliders, PARTY, TAPES and the visualizer unchanged
+    - the extra windows in winampFM's own skin
+
+delivery:
+  mode: upstream
+  fork: genkigenki/winampFM, branch smk37 (to be created by the owner)
+  package: winampfm-smk37.fwsc  # -elite, -mke (dist: winamp-smk37*.fwsc)
+  identity: SMK-37 Pro_900      # FM-1_900 (the release is the unnumbered default build)
+  usb_name: Felucca             # "Felucca Update" while updating; every installer's PORT_RE has "felucca"
+  data_family: WINAMP           # own family: winampFM keeps its options in settings.zoom bits SLOOP uses otherwise
+
+models: [pro, elite, mke]
+
+keys:
+  middle: fm1
+  outer: extend                 # synth tracks notes; drum track SLOOP's outer drums
+  velocity: factory
+
+pads:
+  pattern: steps                # the selected track's loop in reading order; layers: tiles; SEL piano; SAVE sections
+  colours: "the track's colour on the player's seek bar (WF_KNOB[(t + 3) & 3]: orange, blue, green, yellow), saturated"
+  levels: {empty: pale (32), set: lit (90), playhead / sounding: full (220)}   # brightest channel
+  debounce: toggles only (grid, tiles, picker), 180 ms
+  picker:
+    enabled: true
+    open: KNOB BANK             # a PRESETS turn keeps winampFM's playlist on the screen
+    page: "< >"
+
+faders:
+  pattern: banks                # A level, B filter, C reverb, D delay of tracks 1, 2, 3, DRUMS; soft takeover
+  bank_button: FADER BANK
+  screen: a Winamp window with four big EQ sliders in the tracks' colours
+
+wheels:
+  pitch: {target: bend, range_semitones: 2, applies_to: "selected synth track; DRUMS selected: the three synth tracks"}
+  mod: {target: vibrato, detail: 10 Hz, up to +-1 semitone}
+
+knobs:
+  layout: fm1                   # K1 MASTER, K2 SELECT, K3 ALGORITHM, K4 PRESETS, K5-K8 KNOB 1-4
+
+buttons:
+  map: printed
+  extra:
+    KNOB BANK: the PAD SOUNDS window
+    FADER BANK: the FADER BANK window
+    "< >": a SELECT click without the tempo (slider group, visualizer picture, a page's tabs); SEQ held: step pages
+
+screen:
+  style: keep                   # the two SMK windows drawn with the fork's skin helpers
+
+lessons:
+  - "A fork whose SLOOP tree sits one level down (firmware/): fetch sloop-fm1 and the layer into the fork's repository
+    (so the blobs exist), git diff --full-index --binary 8fad1a1 ref/smk37 -- firmware tools build.sh BUILDING.md, then
+    git apply -3 --directory=firmware. Leave the layer's web/, tests/, README and SMK37.md out and write the fork's own."
+  - "Conflicts where the fork grew: build.sh (its own tail), fm1_lcd_hw.h (the fork's fm1_lcd_bl backlight PWM: a no-op
+    on the SMK, and its menu row hidden), felucca.c (the fork dropped ui_vis.c: revert the layer's edit there), main.c
+    (the fork replaced the OCT- + OCT+ calibration by a power-on light show: keep the fork's, drop panel_setup),
+    ui_menu.c (the fork's own menu: keep it, hide rows with its own WFM_MENU_HIDE mask), ui_input.c (LED buffers)."
+  - "Drop the layer's BRAND_ / VIS_ / MI_SYS0 indirections and restore the fork's literals (as ORBIT), including the
+    trailing ';' the layer moved in panel.c's lights_word: check the FM-1 hashes after."
+  - "Soft LED levels (fm1_led_lv[] for key LEDs and a button chase) have no SMK hardware: a write-only stand-in array in
+    smk_input.h, and the power-on wave moved to the pads (padled_set + padled_flush in the boot loop)."
+  - "A fork without host tests: run SLOOP 2.6's suite on the base and the layer's suite on the new tree by
+    git archive 8fad1a1 / ref/smk37 tests web into firmware/ (scratch only), with run_tests.sh made to go on past suites
+    that do not build (drop set -e, compile stderr to a file). Compare failing suites; the layer's SMK screen tests
+    (fbank, pick, k4led) do not build against another UI: replace them by an emulator test."
+  - "A fork with a wasm simulator harness: give it an SMK stand-in under BOARD_SMK37 (18 buttons, 8 knobs, pads with an
+    emu_pad export, emu_pads_ptr for the colours) and include ui_pick / ui_padgrid / ui_fbank in felucca.c's order. That
+    gives the site screenshot and a scripted test of the mapping (buttons, windows, pads, LEDs) before the unit. The FM-1
+    harness needs FM1_NBTN and FL_JEDEC_OK too (the shared sources use them now)."
+  - "Pad colours: take the colour that means 'this track' on the fork's main screen (winampFM: the seek bar's notes), take
+    3/4 of the smallest channel out (an LED shows pastels as white), scale to three levels by the brightest channel."
+  - "Pad debounce for toggles only (grid, tiles, picker): note hits stay free for rolls. Record only toggle hits and keep
+    0 as 'none' (a test hits a pad in note mode, then at once as a step)."
+  - "Wheels: with the drum track selected the layer's bend did nothing (selected synth track only): bend the synth tracks
+    then, so the wheels always change the sound."
+  - "The fork's site installer is an inline module in the root index.html (once generated from another project's
+    make_site.py by a now stale script): edit it in place as its own commit, keep the FM-1 loader rule (FM-1_9NN) so the
+    FM-1 path does not change, and give it an empty SMK package list with a clear 'not on this site yet' message
+    rather than committing binaries or dead links. Test it by slicing the module into node's vm with the FakeFM1."
+  - "Windows from Python on Windows: open(..., newline='\\n') for every write, never '\\1' in a non-raw string (it
+    became \\x01 in a sed line), and edit scripts written to files, not heredocs with quotes."
+  - "RAM on the SMK build: .data + .bss 97432 of 98304 B (872 B left); check it on every SMK build."

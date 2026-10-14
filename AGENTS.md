@@ -113,7 +113,9 @@ Filled examples: [examples/sloop.yaml](examples/sloop.yaml) (SLOOP),
 [examples/choralroot.yaml](examples/choralroot.yaml) (a copied Felucca tree with its own UI, boot stub and many stored
 objects: the layer by hand),
 [examples/orbit.yaml](examples/orbit.yaml) (a SLOOP fork without git history),
-[examples/amb.yaml](examples/amb.yaml) (a generative firmware with no notes to play: the extras as views and gestures).
+[examples/amb.yaml](examples/amb.yaml) (a generative firmware with no notes to play: the extras as views and gestures),
+[examples/polly.yaml](examples/polly.yaml) (an arranger: sections and progressions on the pads),
+[examples/winamp.yaml](examples/winamp.yaml) (a SLOOP copy with its own UI: the SLOOP 2.6 layer applied by directory).
 
 ## 1. Baseline and base
 
@@ -205,7 +207,9 @@ Check: the SMK flash-map test passes and covers every object.
 
 Implement `smk37-port.yaml`, using [docs/06-mapping-patterns.md](docs/06-mapping-patterns.md). Default order:
 
-1. Middle 27 keys (keybed 5..31) = the FM-1 note keys, with velocity from the unit's factory curves.
+1. Middle 27 keys (keybed 5..31) = the FM-1 note keys, with velocity from the unit's factory curves. If the
+   firmware has a settings menu, add KEY VELOCITY there (DYNAMIC default, SOFT / HARD, FIXED 64 / 100 / 127; docs/06
+   "Keys: velocity setting"), applied to keys and pads in one place, stored so older data reads DYNAMIC.
 2. Keep the firmware's own layout first: its knob order, its button grouping (by row or by printed name) and its
    button names. Then the extras.
 3. The 16 pads as decided (default: the FM-1's 16 white keys; top row = hardware pads 0..7). Convert pad numbers in
@@ -215,6 +219,9 @@ Implement `smk37-port.yaml`, using [docs/06-mapping-patterns.md](docs/06-mapping
 6. The extras: outer keys, faders (soft takeover), wheels (self-calibrating). No control repeats another's job
    unless the owner asked for it.
 7. The screen rules: the screen shows what you touch first, same colours and places as the panel, no hidden modes.
+8. On-screen knob names: an FM-1 firmware's "K1".."K4" (menu rows, hints, help lines) mean KNOB 1..4, which are
+   K5..K8 on the SMK (K1..K4 are MASTER, SELECT, ALGORITHM, PRESETS). Grep every UI string and `'1' + i` style
+   label for them and show K5..K8 behind `BOARD_SMK37`; the same in `SMK37.md`.
 
 Before mapping, read the fork's own input and LED code:
 

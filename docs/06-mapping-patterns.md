@@ -23,6 +23,7 @@ bottom row (hardware pads 8..15). The hardware index is the same for hits and LE
 | Control | Pattern | Used in | Choose it when |
 |---|---|---|---|
 | Keys | [Middle 27 = FM-1 keys](#keys-the-fm-1-range-in-the-middle) | all ports | always |
+| Keys | [Velocity setting](#keys-velocity-setting) | Snoop37 | the firmware has a settings menu |
 | Outer keys | [Extend, drums on a drum track](#outer-keys-extend-and-drums) | SLOOP | the firmware has a drum track or a range limit |
 | Pads | [Function keys on the pads](#pads-function-keys-on-the-pads) | ChoralRoot | the firmware uses some keybed keys as functions or modifiers |
 | Pads | [Steps in reading order](#pads-steps-in-reading-order) | SLOOP, X0X, Felucca PR | the firmware has a 16-step sequencer |
@@ -43,6 +44,19 @@ bottom row (hardware pads 8..15). The hardware index is the same for hits and LE
 The middle 27 keys (keybed 5..31, F3..G5) are the FM-1's note keys, with velocity from the unit's own factory
 curves (the `trimdat` record, read only). In layers where the FM-1 uses its keys as tiles (steps, effects, mix),
 the same keys do the same thing. Used by every port.
+
+## Keys: velocity setting
+
+The FM-1's keys have no velocity, and many FM-1 firmwares assume a fixed one (SLOOP: 100). On the SMK, offer a
+KEY VELOCITY setting in the firmware's own settings menu, SMK builds only:
+
+- **Values:** DYNAMIC (as played, the default), SOFT and HARD (two curves on the played velocity), FIXED 64 / 100
+  / 127 (100: as the FM-1).
+- **Where:** apply it where the firmware reads a key's or a pad's velocity (one helper), so the notes, their MIDI out
+  and anything derived from velocity (drum ghost / hard levels) follow it. The raw velocity stays in the input layer.
+- **Store:** in free bits of a settings word the firmware already keeps; 0 = DYNAMIC, so older data loads as before.
+  No store version bump, the FM-1 build byte-identical.
+- **Used in:** Snoop37 (HOME menu > AUDIO > KEY VELOCITY, on K8).
 
 ## Outer keys: extend and drums
 

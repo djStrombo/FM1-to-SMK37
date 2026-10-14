@@ -68,6 +68,7 @@ Things that went wrong in earlier ports, and the fix. Check this list before ste
 | Fork code reads an `fm1_in` field the SMK input lacks (GHOULBOX's crank: `enc_dfr`), or counts in FM-1 frames (909/s; the SMK's are 625/s). | Add the field to `smk_input.h`; grep for frame-based timing constants. |
 | The fork refactored `key_on` (GHOULBOX: `key_on_to(t, note, chord, chn)`, no key index); the layer's `key_vel(k)` in `key_on(k)` no longer fits. | The caller passes the velocity in. |
 | Outer keys go straight to `input_on` / `input_off`: no chord, latch or split from the fork. | Route them through the fork's key_on / key_off helpers (own chord buffers, 10 slots); add them to features that list the held keys. |
+| On-screen "K1".."K4" in an FM-1 firmware means KNOB 1..4 (Snoop37's HOME menu rows); on the SMK those knobs are K5..K8 (K1..K4 are MASTER, SELECT, ALGORITHM, PRESETS). | Fix every such label behind `BOARD_SMK37` (menu rows, hints, help lines, `SMK37.md`); grep UI strings and `'1' + i` style labels. The FM-1 build stays byte-identical. |
 | A volume cap applied to the master level after `master_poll` leaves K1's virtual pot running past the cap; turning down then does nothing for many detents. | Clamp the virtual pot (`smk_master`) to the cap's pot value too (in Felucca master = pot^2 / 256). |
 
 ## Hardware
