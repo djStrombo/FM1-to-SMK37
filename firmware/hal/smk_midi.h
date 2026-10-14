@@ -21,35 +21,14 @@
 #define SMK_PORTC_PD    (*(volatile uint32_t *)0x50094u)
 #define SMK_PORTC_HD    (*(volatile uint32_t *)0x5009Cu)
 
-/* Ring buffer for non-blocking TRS MIDI OUT transmission (placed strictly in .bss / RAM) */
-#define SMK_TRS_RING_SIZE 64u
+/* 256-byte Ring buffer for Lock-Free non-blocking TRS MIDI OUT (placed in .bss / RAM) */
+#define SMK_TRS_RING_SIZE 256u
 volatile uint8_t  smk_trs_ring[SMK_TRS_RING_SIZE] __attribute__((weak, section(".bss")));
 volatile uint32_t smk_trs_w __attribute__((weak, section(".bss")));
 volatile uint32_t smk_trs_r __attribute__((weak, section(".bss")));
 volatile uint8_t  smk_trs_busy __attribute__((weak, section(".bss")));
+volatile uint8_t  smk_trs_timer __attribute__((weak, section(".bss")));
 volatile uint8_t  smk_trs_inited __attribute__((weak, section(".bss")));
-
-/* Drain pending bytes from ring buffer into UART1 TX FIFO (called from 10 kHz TIMER5 ISR) */
-static inline void smk_trs_poll(void)
-{
-    /* 1. If currently transmitting, check if completed (bit 15 = 1) */
-    if (smk_trs_busy) {
-        if (SMK_UT1_CON0 & (1u << 15)) {
-            SMK_UT1_CON0 |= (1u << 13); /* 0x2000: Clear TPND */
-            __asm__ volatile("csync" ::: "memory");
-            smk_trs_busy = 0;
-        }
-    }
-
-    /* 2. If transmitter ready and ring buffer has data, send next byte */
-    if (!smk_trs_busy && (smk_trs_r != smk_trs_w)) {
-        SMK_UT1_CON0 |= (1u << 13);
-        SMK_UT1_BUF = smk_trs_ring[smk_trs_r & (SMK_TRS_RING_SIZE - 1u)];
-        __asm__ volatile("csync" ::: "memory");
-        smk_trs_r++;
-        smk_trs_busy = 1;
-    }
-}
 
 /* Initialize UART1 hardware transmitter on pin PC7 */
 static inline void smk_trs_midi_init(void)
@@ -85,23 +64,58 @@ static inline void smk_trs_midi_init(void)
     __asm__ volatile("csync" ::: "memory");
 
     smk_trs_busy = 0;
+    smk_trs_timer = 0;
     smk_trs_inited = 1;
 }
 
-/* Enqueue a byte to TRS MIDI OUT */
-static inline void smk_trs_tx_byte(uint8_t byte)
+/* Drain pending bytes from ring buffer into UART1 TX FIFO (called ONLY from 10 kHz TIMER5 ISR) */
+static inline void smk_trs_poll(void)
 {
     if (!smk_trs_inited) {
         smk_trs_midi_init();
     }
-    uint32_t next = smk_trs_w + 1u;
-    if (next - smk_trs_r >= SMK_TRS_RING_SIZE) {
-        /* Buffer is full: drain at least one byte synchronously */
-        uint32_t timeout = 50000u;
-        while (smk_trs_busy && !(SMK_UT1_CON0 & (1u << 15)) && --timeout);
-        smk_trs_poll();
+
+    /* 1. If currently transmitting, check if completed (bit 15 = 1) */
+    if (smk_trs_busy) {
+        if (SMK_UT1_CON0 & (1u << 15)) {
+            SMK_UT1_CON0 |= (1u << 13); /* 0x2000: Clear TPND */
+            __asm__ volatile("csync" ::: "memory");
+            smk_trs_busy = 0;
+            smk_trs_timer = 0;
+        } else {
+            /* Watchdog: 1 byte takes 320 us (3.2 ticks). If busy > 25 ticks (2.5 ms), force reset */
+            if (++smk_trs_timer > 25u) {
+                SMK_UT1_CON0 |= (1u << 13);
+                __asm__ volatile("csync" ::: "memory");
+                smk_trs_busy = 0;
+                smk_trs_timer = 0;
+            }
+        }
     }
-    smk_trs_ring[smk_trs_w & (SMK_TRS_RING_SIZE - 1u)] = byte;
-    smk_trs_w = next;
-    smk_trs_poll();
+
+    /* 2. If transmitter ready and ring buffer has data, send next byte */
+    if (!smk_trs_busy) {
+        uint32_t r = smk_trs_r;
+        uint32_t w = smk_trs_w;
+        if (r != w) {
+            SMK_UT1_CON0 |= (1u << 13);
+            SMK_UT1_BUF = smk_trs_ring[r & (SMK_TRS_RING_SIZE - 1u)];
+            __asm__ volatile("csync" ::: "memory");
+            smk_trs_r = r + 1u;
+            smk_trs_busy = 1;
+            smk_trs_timer = 0;
+        }
+    }
+}
+
+/* Enqueue a byte to TRS MIDI OUT - 100% Lock-Free & Non-Blocking SPSC Producer */
+static inline void smk_trs_tx_byte(uint8_t byte)
+{
+    uint32_t w = smk_trs_w;
+    uint32_t r = smk_trs_r;
+    if ((uint32_t)(w - r) < SMK_TRS_RING_SIZE) {
+        smk_trs_ring[w & (SMK_TRS_RING_SIZE - 1u)] = byte;
+        __asm__ volatile("csync" ::: "memory");
+        smk_trs_w = w + 1u;
+    }
 }
