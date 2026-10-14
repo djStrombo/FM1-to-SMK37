@@ -244,9 +244,15 @@ def port_repo_to_smk37(target_repo_dir: Path):
         # Top-level includes & clock rules
         if "smk_clk_accum" not in seq_code:
             clock_rule = (
-                "/* G_SYNC: 0=INT (no sync in/out), 1=USB (rx usb only), 2=TRS (tx trs only) */\n#define SMK_TRS_SEND_CLOCK (song.g[G_SYNC] == 2)"
+                "/* G_SYNC: 0=INT (no clock), 1=USB (in & out via USB), 2=TRS (out via TRS only) */\n"
+                "#define SMK_USB_SEND_CLOCK (song.g[G_SYNC] == 1)\n"
+                "#define SMK_TRS_SEND_CLOCK (song.g[G_SYNC] == 2)"
                 if "G_SYNC" in seq_code
-                else ("#define SMK_TRS_SEND_CLOCK (song.g[G_CLOCK] != 0)" if "G_CLOCK" in seq_code else "#define SMK_TRS_SEND_CLOCK 1")
+                else (
+                    "#define SMK_USB_SEND_CLOCK (!song.g[G_CLOCK])\n#define SMK_TRS_SEND_CLOCK (song.g[G_CLOCK] != 0)"
+                    if "G_CLOCK" in seq_code
+                    else "#define SMK_USB_SEND_CLOCK 1\n#define SMK_TRS_SEND_CLOCK 1"
+                )
             )
             clock_decl = (
                 '#if BOARD_SMK37\n'
@@ -302,6 +308,7 @@ def port_repo_to_smk37(target_repo_dir: Path):
                     "#if BOARD_SMK37\n"
                     "    smk_clk_accum = 0;\n"
                     "    if (SMK_TRS_SEND_CLOCK) smk_trs_tx_byte(0xFAu);\n"
+                    "    if (SMK_USB_SEND_CLOCK) midi_out_event(0x0Fu | (0xFAu << 8));\n"
                     "#endif\n"
                     "    slicer_start(pos);"
                 )
@@ -312,6 +319,7 @@ def port_repo_to_smk37(target_repo_dir: Path):
                     "#if BOARD_SMK37\n"
                     "    smk_clk_accum = 0;\n"
                     "    if (SMK_TRS_SEND_CLOCK) smk_trs_tx_byte(0xFAu);\n"
+                    "    if (SMK_USB_SEND_CLOCK) midi_out_event(0x0Fu | (0xFAu << 8));\n"
                     "#endif\n"
                     "    slicer_start();"
                 )
@@ -326,6 +334,7 @@ def port_repo_to_smk37(target_repo_dir: Path):
                 "#if BOARD_SMK37\n"
                 "    smk_clk_accum = 0;\n"
                 "    if (SMK_TRS_SEND_CLOCK) smk_trs_tx_byte(0xFCu);\n"
+                "    if (SMK_USB_SEND_CLOCK) midi_out_event(0x0Fu | (0xFCu << 8));\n"
                 "    for (uint32_t tr = 0; tr < NTRK; tr++) {\n"
                 "        uint32_t mc = trk_midi_ch(tr);\n"
                 "        if (mc <= 15u) midi_out_event(0x0Bu | ((0xB0u | mc) << 8) | (123u << 16));\n"
@@ -336,7 +345,7 @@ def port_repo_to_smk37(target_repo_dir: Path):
         elif "seq_stop(void)" in seq_code and "0xFCu" not in seq_code.split("seq_stop")[1][:300]:
             seq_code = re.sub(
                 r'(static\s+void\s+seq_stop\s*\([^)]*\)[^{]*\{[^}]*?)(song\.playing\s*=\s*0\s*;)',
-                r'\1\2\n#if BOARD_SMK37\n    smk_clk_accum = 0;\n    if (SMK_TRS_SEND_CLOCK) smk_trs_tx_byte(0xFCu);\n    for (uint32_t tr = 0; tr < NTRK; tr++) {\n        uint32_t mc = trk_midi_ch(tr);\n        if (mc <= 15u) midi_out_event(0x0Bu | ((0xB0u | mc) << 8) | (123u << 16));\n    }\n#endif',
+                r'\1\2\n#if BOARD_SMK37\n    smk_clk_accum = 0;\n    if (SMK_TRS_SEND_CLOCK) smk_trs_tx_byte(0xFCu);\n    if (SMK_USB_SEND_CLOCK) midi_out_event(0x0Fu | (0xFCu << 8));\n    for (uint32_t tr = 0; tr < NTRK; tr++) {\n        uint32_t mc = trk_midi_ch(tr);\n        if (mc <= 15u) midi_out_event(0x0Bu | ((0xB0u | mc) << 8) | (123u << 16));\n    }\n#endif',
                 seq_code,
                 count=1
             )
@@ -345,14 +354,15 @@ def port_repo_to_smk37(target_repo_dir: Path):
         if "while (clk_pos >= BEAT_U)" in seq_code and "smk_clk_accum += adv;" not in seq_code:
             clk_orbit = '''clk_pos += adv;
 #if BOARD_SMK37
-        if (SMK_TRS_SEND_CLOCK) {
+        if (SMK_TRS_SEND_CLOCK || (SMK_USB_SEND_CLOCK && !mclk_on())) {
             uint32_t pulse_u = BEAT_U / 24u;
             if (!pulse_u) pulse_u = 1;
             smk_clk_accum += adv;
             if (smk_clk_accum >= pulse_u * 4u) smk_clk_accum = pulse_u;
             while (smk_clk_accum >= pulse_u) {
                 smk_clk_accum -= pulse_u;
-                smk_trs_tx_byte(0xF8u);
+                if (SMK_TRS_SEND_CLOCK) smk_trs_tx_byte(0xF8u);
+                if (SMK_USB_SEND_CLOCK) midi_out_event(0x0Fu | (0xF8u << 8));
             }
         }
 #endif'''
@@ -360,7 +370,7 @@ def port_repo_to_smk37(target_repo_dir: Path):
         elif "click_tick(seq_n);" in seq_code and "smk_clk_accum" not in seq_code.split("click_tick")[1][:400]:
             clk_felucca = '''click_tick(seq_n);
 #if BOARD_SMK37
-        if (SMK_TRS_SEND_CLOCK) {
+        if (SMK_TRS_SEND_CLOCK || SMK_USB_SEND_CLOCK) {
             uint32_t b_samples = beat_samples();
             if (b_samples) {
                 uint32_t pulse_s = b_samples / 24u;
@@ -368,7 +378,8 @@ def port_repo_to_smk37(target_repo_dir: Path):
                 smk_clk_accum += (clock_mode ? seq_n : n);
                 while (smk_clk_accum >= pulse_s) {
                     smk_clk_accum -= pulse_s;
-                    smk_trs_tx_byte(0xF8u);
+                    if (SMK_TRS_SEND_CLOCK) smk_trs_tx_byte(0xF8u);
+                    if (SMK_USB_SEND_CLOCK) midi_out_event(0x0Fu | (0xF8u << 8));
                 }
             }
         }
