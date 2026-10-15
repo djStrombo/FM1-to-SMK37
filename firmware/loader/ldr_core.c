@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
-/* Felucca update loader, the portable part (step 2 of the M-UPGRADE update
+/* Melodee update loader, the portable part (step 2 of the M-UPGRADE update
  * protocol).
  *
  * The host serves the package ("logical image") with cmd 0x30 reads (ota.c).
@@ -9,35 +9,33 @@
  *   2. checks that the package's app area decrypts with THIS chip's key
  *      (taken from isd_config.ini in the device's own flash head), so a
  *      package for another key is refused before anything is erased;
- *   3. writes ONLY the app area [0x4000, 0x93000), sector by sector, skipping
+ *   3. moves the Prophet user banks from 0x89000 (below an older, smaller app area's end) to 0x93000, then
+ *      writes ONLY the app area [0x4000, 0x93000), sector by sector, skipping
  *      sectors that are already equal, and verifies each one; the flash head
  *      (SPL, isd_config) is never written;
- *   4. checks the CRC16 the package stores for flash.bin against everything it
- *      was served (the head too, which it never writes; a mismatch: up to two
- *      more passes, rewriting what differs), asks 0xF0000000 ("success"), then
- *      invalidates the update record (RAM and flash) so the SPL boots the new
- *      app, and resets. A damaged package or no "success" leaves the record:
- *      the loader stays (also after a power cycle) and the host can resume.
+ *   4. asks 0xF0000000 ("success"), then invalidates the update record (RAM
+ *      and flash) so the SPL boots the new app, and resets.
  * Power loss during 3: the record is still there, the SPL runs the loader
  * again on the next power-on and the host can resume.
  *
- * Hooks from the platform (loader.c, tests/ldr_test.c):
+ * Hooks from the platform (loader.c, ldr_test.c):
  *   ldr_fread(off, p, n)  ldr_erase(off)  ldr_prog(off, p, n)   flash, 0 = ok
  *   ldr_record_clear()    forget the RAM update record
- *   ldr_flash_known()     the flash chip is the 1 MiB part SLOOP's storage expects (else nothing is
- *                         written: the update records go and the old firmware starts again)
  *   ldr_progress(done, total)
  * plus the ota.c hooks (frames, time, idle). */
 #define LDR_APP_LO 0x4000u
 #define LDR_APP_HI 0x93000u
+#define LDR_P5_OLD 0x89000u                     /* the Prophet user banks (storage.c OBJ_P5BANK0.., ten sectors: five */
+#define LDR_P5_NEW 0x93000u                     /* banks, copies A B) before and since the app area grew to 0x93000 */
+#define LDR_P5_SECTORS 10u
+#define LDR_P5_OBJ0 25u                         /* storage.c OBJ_P5BANK0 (prophet_integration_test checks it) */
 #define LDR_REC_LO 0x93000u                     /* update records live above the app ... */
-#define LDR_REC_HI 0xFC000u                     /* ... and below Felucca's globals */
+#define LDR_REC_HI 0xFC000u                     /* ... and below Melodee's globals */
 
 static int ldr_fread(uint32_t off, void *p, uint32_t n);
 static int ldr_erase(uint32_t off);
 static int ldr_prog(uint32_t off, const void *p, uint32_t n);
 static void ldr_record_clear(void);
-static int ldr_flash_known(void);
 static void ldr_progress(uint32_t done, uint32_t total);
 
 /* SFC cipher: per 32-byte block, key ^ (block offset >> 2) */
@@ -84,33 +82,60 @@ static int ldr_chip_key(uint32_t *key)
     return -3;
 }
 
-#define LDR_EBADPKG (-12)                       /* flash.bin as served does not match the package's CRC16 */
-#define LDR_ENOFIN (-13)                        /* no "success" from the host */
-#define LDR_EFLASH (-14)                        /* another flash chip: nothing written, the records dropped */
-
-/* the update records (RAM, and flash: a 4K boundary - 256) go: the SPL boots the app */
-static void ldr_records_drop(void)
+/* storage.c's commit record (magic, type, copy, .., header CRC-32) of Prophet bank s / 2, copy s % 2 */
+static int ldr_p5_rec(const uint8_t *h, uint32_t s)
 {
-    uint32_t s;
-    ldr_record_clear();
-    for (s = LDR_REC_HI; s > LDR_REC_LO; s -= 0x1000u) {
-        uint8_t r[80];
-        if (ldr_fread(s - 0x100u, r, 80))
-            break;
-        if (ota_rd16(r + 6) == 0x5441u && ota_rd16(r) && ota_rd16(r) == ota_crc16(r + 2, 78, 0))
-            ldr_erase(s - 0x1000u);
+    uint32_t c = 0xFFFFFFFFu, i, j;
+    for (i = 0; i < 28u; i++)                           /* (zlib CRC-32, as st_crc32) */
+        for (c ^= h[i], j = 0; j < 8u; j++)
+            c = (c >> 1) ^ (0xEDB88320u & (0u - (c & 1u)));
+    return ota_rd32(h) == 0x554C4546u && ota_rd16(h + 4) == LDR_P5_OBJ0 + s / 2u && ota_rd16(h + 6) == (s & 1u) &&
+           ota_rd32(h + 28) == ~c;
+}
+/* the Prophet user banks to their place above the app area, before the app is written over the old one: a sector
+ * whose new place holds its commit record is done (the record goes in last, so a copy cut short never has one); an
+ * old one without a record has nothing to move (never saved, or written over by an earlier session's app) */
+static int ldr_p5_move(uint8_t *sec, uint8_t *cur)
+{
+    uint32_t s, k, tries;
+    for (s = 0; s < LDR_P5_SECTORS; s++) {
+        uint32_t from = LDR_P5_OLD + s * 0x1000u, to = LDR_P5_NEW + s * 0x1000u;
+        if (ldr_fread(to, cur, 32))
+            return -8;
+        if (ldr_p5_rec(cur, s))
+            continue;
+        if (ldr_fread(from, sec, 0x1000u))
+            return -8;
+        if (!ldr_p5_rec(sec, s))
+            continue;
+        for (tries = 0; tries < 2u; tries++) {
+            if (ldr_erase(to))
+                return -9;
+            for (k = 256u; k < 0x1000u; k += 256u)      /* the body, then the page with the record */
+                if (ldr_prog(to + k, sec + k, 256))
+                    return -10;
+            if (ldr_prog(to, sec, 256))
+                return -10;
+            if (ldr_fread(to, cur, 0x1000u))
+                return -8;
+            if (ota_memeq(sec, cur, 0x1000u))
+                break;
+        }
+        if (tries == 2u)
+            return -11;
     }
+    return 0;
 }
 
-static int ldr_pass(void)
+static int ldr_session(void)
 {
     static uint8_t hdr[0x400], sec[0x1000], cur[0x1000];
-    uint32_t i, k, fl_off, fl_size, ota_off, ota_len, key, s, n, want, crc = 0, done = 0;
+    uint32_t i, k, fl_off, fl_size, ota_off, ota_len, key, s, done = 0;
     int rc;
     /* 1. UFW header + entry list (ota.c) */
-    if ((rc = ota_ufw(hdr, &fl_off, &fl_size, &ota_off, &ota_len, &want)) != 0)
+    if ((rc = ota_ufw(hdr, &fl_off, &fl_size, &ota_off, &ota_len)) != 0)
         return rc;
-    if (!fl_off || fl_size < LDR_APP_HI)
+    if (!fl_off || fl_size != LDR_APP_HI)
         return -3;
     /* 2. the package's app area must decrypt with this chip's key */
     if ((rc = ldr_chip_key(&key)) != 0)
@@ -120,22 +145,13 @@ static int ldr_pass(void)
     ldr_sfc(sec, 32, 0, key);
     if (ota_crc16(sec + 2, 30, 0) != ota_rd16(sec))
         return -6;                                       /* package for another chip key */
-    if (!ldr_flash_known()) {                            /* SLOOP would run without its storage and could not */
-        ldr_records_drop();                              /* be updated again: keep the firmware there is */
-        return LDR_EFLASH;
-    }
-    /* the head of flash.bin is never written, but it is part of the package's CRC */
-    for (s = 0; s < LDR_APP_LO; s += 512u) {
-        if (ota_read(fl_off + s, sec, 512))
-            return -7;
-        crc = ota_crc16(sec, 512, crc);
-    }
-    /* 3. app area, sector by sector */
+    /* 3. the Prophet banks up, then the app area, sector by sector */
+    if ((rc = ldr_p5_move(sec, cur)) != 0)
+        return rc;
     for (s = LDR_APP_LO; s < LDR_APP_HI; s += 0x1000u) {
         for (k = 0; k < 0x1000u; k += 512u)
             if (ota_read(fl_off + s + k, sec + k, 512))
                 return -7;
-        crc = ota_crc16(sec, 0x1000u, crc);
         if (ldr_fread(s, cur, 0x1000u))
             return -8;
         if (!ota_memeq(sec, cur, 0x1000u)) {
@@ -157,34 +173,17 @@ static int ldr_pass(void)
         done += 0x1000u;
         ldr_progress(done, LDR_APP_HI - LDR_APP_LO);
     }
-    for (s = LDR_APP_HI; s < fl_size; s += n) {          /* (a flash.bin longer than the app area) */
-        n = fl_size - s < 512u ? fl_size - s : 512u;
-        if (ota_read(fl_off + s, sec, n))
-            return -7;
-        crc = ota_crc16(sec, n, crc);
-    }
-    /* 4. finish: the whole package arrived as it was built, the host confirms, the record goes,
-     *    the SPL boots the app */
-    if (crc != want)
-        return LDR_EBADPKG;
+    /* 4. finish: the host confirms, the record goes, the SPL boots the app */
     for (i = 0; i < 4u; i++)
         if (!ota_read(0xF0000000u, sec, 8))
             break;
-    if (i == 4u)
-        return LDR_ENOFIN;
-    ldr_records_drop();
+    ldr_record_clear();
+    for (s = LDR_REC_HI; s > LDR_REC_LO; s -= 0x1000u) {   /* flash records: 4K boundary - 256 */
+        uint8_t r[80];
+        if (ldr_fread(s - 0x100u, r, 80))
+            break;
+        if (ota_rd16(r + 6) == 0x5441u && ota_rd16(r) && ota_rd16(r) == ota_crc16(r + 2, 78, 0))
+            ldr_erase(s - 0x1000u);
+    }
     return 0;
 }
-
-/* a pass that does not add up (a byte damaged on the way) is run again: the host answers any read, so it
- * just serves the image once more and the sectors that differ are rewritten; a package that is damaged
- * itself fails every pass and the record stays */
-static int ldr_session(void)
-{
-    int rc = LDR_EBADPKG;
-    uint32_t pass;
-    for (pass = 0; pass < 3u && rc == LDR_EBADPKG; pass++)
-        rc = ldr_pass();
-    return rc;
-}
-

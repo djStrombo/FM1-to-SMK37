@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
-/* FM-1 system HAL: P33 access, watchdog, reset reason, reboot / UBOOT entry.
- * Call with interrupts off so nothing else touches P33.
+/* FM-1 system HAL: P33 access, watchdog, reset reason, reboot / UBOOT entry
+ * No vendor code; call with interrupts off
+ * (no IRQs are enabled yet, so nothing else touches P33).
  *
  *   fm1_reset_reason()   snapshot P3_RST_SRC / RST_SRC (call first thing)
  *   fm1_wdt_arm(t)       reset-mode watchdog, t = 0xA 1 s .. 0xF 32 s
@@ -46,7 +47,7 @@ static uint8_t fm1__p33_xfer(uint8_t b)
 static void fm1__p33_cs(uint32_t a)
 {
     if (a & 0x8000u) {
-        FM1_P33_CON |= (1u << 0) | (1u << 8);    /* R3 (RTC) domain */
+        FM1_P33_CON |= (1u << 0) | (1u << 8);    /* RTC domain */
     } else {
         FM1_P33_CON &= ~(1u << 8);
         FM1_P33_CON |= 1u << 0;
@@ -106,12 +107,26 @@ static void fm1_reset_reason(void)
     fm1_boot.wdt_con = fm1_p33_read(FM1_P3_WDT_CON);
 }
 
+static inline void fm1_core1_stop(void);
+
 static void fm1_reboot(void)
 {
     __asm__ volatile("cli");
+    fm1_core1_stop();
     fm1_p33_or(FM1_P3_PR_PWR, 0x10);
     for (;;)
         ;
+}
+
+/* Stop CPU1 before handing RAM/XIP back to the bootloader. The SDK uses
+ * C1_CON bit 1 to hold the core and bit 3 to release it. */
+static inline void fm1_core1_stop(void)
+{
+#if MELODEE_DUAL_CORE || MELODEE_CACHE_RAM
+    *(volatile uint32_t *)0x1EEE004u |= 2u;
+    *(volatile uint32_t *)0x1EEE004u &= ~8u;
+    __asm__ volatile("csync" ::: "memory");
+#endif
 }
 
 static void fm1_enter_uboot(void)
@@ -119,6 +134,7 @@ static void fm1_enter_uboot(void)
     static const char k[16] = "usb_update_mode";
     uint32_t i;
     __asm__ volatile("cli");
+    fm1_core1_stop();
     /* CPU0 write limits (fm1_guard.h) may cover the mailbox: drop them all */
     if (!(*(volatile uint32_t *)0x1EEE240u & 1u))
         *(volatile uint32_t *)0x1EEE240u = 0xE7u;
@@ -132,6 +148,8 @@ static void fm1_enter_uboot(void)
 
 FM1_INLINE void fm1_core_reset(void)
 {
+    __asm__ volatile("cli" ::: "memory");
+    fm1_core1_stop();
     FM1_PWR_CON |= 0x10u;
     for (;;)
         ;
@@ -170,4 +188,3 @@ static int fm1_mem_readable(uint32_t a, uint32_t n)
            (a >= 0x02000000u && a + n <= 0x02100000u && a + n >= a);
 }
 FM1_INLINE uint8_t fm1_peek8(uint32_t a) { return *(const volatile uint8_t *)a; }
-

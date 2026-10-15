@@ -60,7 +60,7 @@ static uint32_t noise_inc(int32_t p)
         p -= 192;
         sh++;
     }
-    inc = pitch_inc((uint32_t)clamp(p, 0, 2047));
+    inc = tuned_pitch_inc((uint32_t)clamp(p, 0, 2047));
     return sh && inc >= 0x80000000u >> (sh - 1u) ? 0xFFFFFFFFu : inc << sh;
 }
 
@@ -161,6 +161,8 @@ static void noise_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
     } else if (mode == NZ_META) {
         inc = p[P_E7] || d16 ? noise_inc(m->pitch16 + p[P_E7] * 16 + d16) : m->inc;
     }
+    if (v->scale_fine && (mode == NZ_LFSR || (mode == NZ_META && (p[P_E7] || d16))))
+        inc += (uint32_t)((int32_t)(inc >> 12) * v->scale_fine);
     for (i = 0; i < n; i++) {
         int32_t w, x, v1, v2, v3, y;
         switch (mode) {
@@ -240,20 +242,12 @@ static void noise_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
 
 /* {MODE, COLR, FREQ, RES, TRK, DENS, DRFT, CRSH / CLK} */
 static const preset_t NOISE_PRESETS[] = {
-    {"WIND", {NZ_ANLG, 64, 70, 100, 127, 0, 70, 0}, {90, 90, 110, 90}, 0, 0, FX(0, 30, 20, 80)},
-    {"RAIN", {NZ_DUST, 30, 88, 80, 64, 105, 40, 0}, {10, 90, 127, 70}, 0, 0, FX(0, 0, 20, 70)},
+    {"WIND", {NZ_ANLG, 64, 70, 100, 127, 0, 70, 0}, {90, 90, 110, 90}, 0, 0},
+    {"RAIN", {NZ_DUST, 30, 88, 80, 64, 105, 40, 0}, {10, 90, 127, 70}, 0, 0},
     /* a 7-bit register (127 steps) clocked 84 semitones (7 octaves) above the key: one period per key period,
      * a pitched chip-style buzz */
-    {"NZ ARCADE", {NZ_LFSR, 0, 127, 0, 127, 112, 0, 84}, {0, 80, 0, 50}, 0, 0, FX(0, 0, 10, 20)},
-    {"NZ METAL", {NZ_META, 0, 100, 40, 100, 32, 0, 0}, {0, 75, 40, 60}, 10, 0, FX(0, 20, 30, 45)},
-    /* SLOOP 2.5 */
-    {"OCEAN", {NZ_ANLG, 100, 50, 20, 0, 0, 110, 0}, {100, 90, 127, 100}, 0, 0, FX(0, 20, 0, 70)},
-    {"VINYL", {NZ_DUST, 0, 110, 10, 0, 70, 20, 0}, {0, 64, 127, 40}, 0, 0, FX(0, 0, 0, 10)},
-    {"HISS", {NZ_ANLG, 0, 115, 0, 0, 0, 0, 0}, {20, 64, 127, 40}, 0, 0, FX(0, 0, 0, 20)},
-    {"RISER", {NZ_ANLG, 30, 60, 110, 127, 0, 0, 0}, {100, 90, 127, 60}, 0, 0, FX(0, 20, 30, 60)},
-    {"NZ SNARE", {NZ_ANLG, 20, 90, 30, 64, 0, 0, 0}, {0, 60, 0, 44}, 0, 0, FX(0, 0, 0, 25)},
-    {"BITCRUSH", {NZ_ANLG, 40, 90, 40, 64, 0, 0, 100}, {0, 70, 110, 40}, 0, 0, FX(0, 0, 20, 30)},
-    {"RADIO", {NZ_LFSR, 20, 70, 90, 64, 0, 60, 48}, {10, 70, 120, 50}, 0, 0, FX(0, 10, 30, 40)},
+    {"ARCADE", {NZ_LFSR, 0, 127, 0, 127, 112, 0, 84}, {0, 80, 0, 50}, 0, 0},
+    {"METAL", {NZ_META, 0, 100, 40, 100, 32, 0, 0}, {0, 75, 40, 60}, 10, 0},
 };
 
 static const engine_t ENG_NOISE = {
@@ -273,8 +267,7 @@ static const engine_t ENG_NOISE = {
     .npresets = NELEM(NOISE_PRESETS),
     .note_on = noise_note_on,
     .render = noise_render,
-    .fil_page = 0,
-    .color = 0xC618,
-    .macro = {P_E2, P_E3, P_E1, P_REL},
+    .knob = {P_E2, P_E3, P_E1, P_REL},
+    .keep = 0xF3,                /* the filter, the colour poles */
     .desc = noise_desc,
 };

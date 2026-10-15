@@ -1,18 +1,23 @@
+import os
+BOARD = os.environ.get("BOARD", "smk37")
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
-"""Build Felucca: the app, the update loader and an installable .fwsc package.
+"""Build Melodee: the app, the update loader and an installable .fwsc package.
 
-  tools/build.py [--release X.Y[-suffix]]
+  tools/build.py [--release X.Y[.Z][-suffix]]
 
-Outputs in build/: felucca.bin (app), loader/ota.bin (update loader),
-orbit.fwsc (package). See BUILDING.md for the toolchain and the SDK.
+Outputs in build/: melodee.bin (app), loader/ota.bin (update loader),
+melodee.fwsc (package). A release build (--release X.Y) writes melodee-X.Y.fwsc and a folder
+release-X.Y/ with the package, the app, SHA256SUMS, the licence files.
+See BUILDING.md for the toolchain and the SDK.
 
 The JieLi toolchain is Linux x86-64 only. JIELI_TOOLCHAIN points at it; on
 macOS (or with JIELI_DOCKER=1) each tool runs in a linux/amd64 container.
 """
 import argparse
 import hashlib
+import json
 import os
 import platform
 import re
@@ -37,7 +42,7 @@ APP_SLOT = fm1pkg_make.APP_SLOT
 LOADER_LOAD = 0x01C0A800
 LOADER_NAME = b"usb_hid_ota.bin"    # the file name the SPL looks for
 DOCKER_IMAGE = os.environ.get("JIELI_DOCKER_IMAGE", "debian:bookworm-slim")
-CFLAGS = ["-Os", "-fdata-sections", "-ffunction-sections", "-DBOARD_SMK37=1", "-ffunction-sections", "-fno-builtin", "-Wall", "-Wno-unused-function"]
+CFLAGS = ["-DBOARD_SMK37=1", "-DFELUCCA_CDC=0", "-DFELUCCA_UART=0", "-DMELODEE_CDC=0", "-DMELODEE_UART=0", "-mcpu=r3", "-mfprev1", "-ffp-contract=off", "-Werror=double-promotion", "-Os", "-ffunction-sections", "-fdata-sections", "-fno-builtin", "-Wall", "-Wno-unused-function"]
 LINE = re.compile(r"^\s*([0-9a-f]+):\s+((?:[0-9a-f]{2} )+)\s*\t(.*)$")
 
 # SDK files of AC79NN_SDK_V1.2.1_2023-12-13 (the tested version)
@@ -47,8 +52,8 @@ SDK_SHA256 = {
     "cfg/eq_cfg_hw.bin": "41167491bffed4651750719c973d2758adeb9021a5670d02d6a53c85ed80ea7d",
 }
 
-PRODUCT = "FM-1_900"                # package identity; release builds are FM-1_9XY
-VERSION = None                      # FELUCCA_VERSION for release builds (default: firmware/src/ui.c)
+PRODUCT = "SMK-37 Pro_900"                # package identity; release builds are FM-1_9XY[Z] (0.10: FM-1_9010, 0.11.1: FM-1_90111)
+VERSION = None                      # MELODEE_VERSION for release builds (default: firmware/src/melodee.c)
 
 
 def toolchain():
@@ -89,16 +94,20 @@ def tc_all(*cmds):
 
 
 def generate():
-    """generated headers (fonts, icons, tables, samples)"""
+    """generated headers (UI fonts, icons, keycaps, palettes, tables)"""
     GEN.mkdir(parents=True, exist_ok=True)
+    for old in ("melodee_font.h", "melodee_icons.h"):     # headers of the bitmap font and icon atlas
+        (GEN / old).unlink(missing_ok=True)
     tools = SRC / "tools"
-    cmds = [[tools / "gen_font.py", GEN / "felucca_font.h"],
-            [tools / "gen_icons.py", GEN / "felucca_icons.h"],
-            [tools / "gen_tables.py", GEN / "felucca_tables.h"],
-            [tools / "gen_samples.py", GEN / "felucca_samples.h"],
-            [tools / "gen_drumkits.py", GEN / "felucca_drumkits.h"],
-            [tools / "gen_fm6_patches.py", GEN / "felucca_fm6.h"],
-            [tools / "gen_op1_cluster.py", GEN / "felucca_op1_cluster.h"]]
+    subprocess.run([sys.executable, str(tools / "gen_scales.py"), "--check"], check=True)
+    cmds = [[tools / "gen_aa_font.py", GEN / "ui_fonts.h", "--preset", "rubik"],
+            [tools / "gen_icons.py", GEN / "ui_icons.h"],
+            [tools / "gen_aa_keycaps.py", GEN / "ui_keycaps.h"],
+            [tools / "gen_ui_palettes.py", GEN / "ui_palettes.h"],
+            [tools / "gen_tables.py", GEN / "melodee_tables.h"],
+            [tools / "gen_fm6_patches.py", GEN / "melodee_fm6.h"],
+            [tools / "gen_cz1_factory.py", GEN / "melodee_cz1.h"],
+            [tools / "gen_prophet_factory.py", GEN / "melodee_prophet_factory.h", "--web", "check"]]
     procs = [subprocess.Popen([sys.executable, *map(str, c)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                               text=True) for c in cmds]
     failed = []
@@ -151,7 +160,7 @@ def build_loader():
     tc("pi32v2/bin/ld", "--gc-sections", "-e", "_start", "-T", src / "loader.ld",
        LDR / "crt0_ldr.o", LDR / "loader.o", "-o", elf)
     _, dis, hdr, syms = tc_all(("common/bin/objcopy", "-O", "binary", "-j", ".text", elf, LDR / "loader.bin"),
-                               ("common/bin/objdump", "-d", elf),
+                               ("common/bin/objdump", "-d", "-mcpu=r3", "-mattr=+fprev1", elf),
                                ("common/bin/objdump", "-h", elf),
                                ("common/bin/objdump", "-t", elf))
     (LDR / "loader.dis").write_text(dis)
@@ -173,37 +182,65 @@ def build_loader():
 # ---- app
 
 def build_app():
+    subprocess.run([sys.executable, SRC / "tools/gen_909_tables.py", GEN / "x0x_drum_tables.h"], check=True)
     flags = [*CFLAGS, "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
-    for flag in ("FELUCCA_FLASH", "FELUCCA_OTA", "FELUCCA_OTA_DRYRUN", "FELUCCA_CDC", "FELUCCA_UAC", "FELUCCA_UART",
-                 "FELUCCA_ICONS", "FELUCCA_SLICE"):
-        v = os.environ.get(flag)    # unset: the default in firmware/src/felucca.c
+    for flag in ("MELODEE_FLASH", "MELODEE_OTA", "MELODEE_OTA_DRYRUN", "MELODEE_OTA_RAMONLY", "MELODEE_CDC",
+                 "MELODEE_UART", "MELODEE_USB_AUDIO", "MELODEE_ICONS", "MELODEE_PROPHET_PROTOTYPE",
+                 "MELODEE_BENCH_SILENT", "MELODEE_DUAL_CORE", "MELODEE_CACHE_RAM", "MELODEE_CORE1_TEST", "MELODEE_RAM_AUDIO"):
+        v = os.environ.get(flag)    # unset: the default in firmware/src/melodee.c
         if v in ("0", "1"):
             flags.append(f"-D{flag}={v}")
-    flags.append(f'-DFELUCCA_ID="{PRODUCT}"')
+    if os.environ.get("MELODEE_SYS_CLK") == "320":          # boot-time SYS PLL retune (hal/fm1_clock.h)
+        flags.append("-DMELODEE_SYS_CLK=320")
+    if os.environ.get("P5_OVERSAMPLE") in ("1", "2"):
+        flags.append("-DP5_OVERSAMPLE=" + os.environ["P5_OVERSAMPLE"])
+    flags.append(f'-DMELODEE_ID="{PRODUCT}"')
     if VERSION:
-        flags.append(f'-DFELUCCA_VERSION="{VERSION}"')
-    tc_all(("cc", "-c", FW / "crt0.S", "-o", OUT / "crt0.o"),
+        flags.append(f'-DMELODEE_VERSION="{VERSION}"')
+    # melodee.c goes to LLVM IR without the optimizer, the main-loop functions (UI, stores, editor) are
+    # marked minsize (tools/size_fns.py), then the IR is compiled at -Os. MELODEE_SIZE=0: -Os everywhere
+    size = os.environ.get("MELODEE_SIZE") != "0"
+    cmain = (("cc", *flags, "-S", "-emit-llvm", "-Xclang", "-disable-llvm-optzns", "-c",
+              FW / "src" / "melodee.c", "-o", OUT / "melodee.ll") if size else
+             ("cc", *flags, "-c", FW / "src" / "melodee.c", "-o", OUT / "melodee.o"))
+    tc_all(("cc", *[f for f in flags if f.startswith("-DMELODEE_DUAL_CORE=")], "-c", FW / "crt0.S", "-o", OUT / "crt0.o"),
            ("cc", "-c", FW / "hal" / "fm1_vec.S", "-o", OUT / "fm1_vec.o"),
            ("cc", "-c", FW / "hal" / "fm1_isr.S", "-o", OUT / "fm1_isr.o"),
-           ("cc", *flags, "-c", FW / "src" / "felucca.c", "-o", OUT / "felucca.o"))
-    elf = OUT / "felucca.elf"
-    tc("pi32v2/bin/ld", "--gc-sections", "-T", FW / "app.ld", OUT / "crt0.o", OUT / "fm1_vec.o", OUT / "fm1_isr.o",
-       OUT / "felucca.o", "-o", elf)
-    for sect in ("text.bin", "data.bin", "ramtext.bin"):
+           cmain)
+    if size:
+        subprocess.run([sys.executable, SRC / "tools" / "size_fns.py", OUT / "melodee.ll", OUT / "melodee_size.ll"],
+                       check=True)
+        irflags = [("-O2" if f == "-Os" else f) for f in flags if not f.startswith(("-I", "-D", "-W"))]
+        if os.environ.get("MELODEE_RAM_AUDIO") == "1":
+            tc("cc", *irflags, "-S", "-emit-llvm", OUT / "melodee_size.ll", "-o", OUT / "melodee_audio_opt.ll")
+            subprocess.run([sys.executable, SRC / "tools/audio_ram.py", OUT / "melodee_audio_opt.ll", OUT / "melodee_audio.ll"], check=True)
+            tc("cc", *irflags, "-c", OUT / "melodee_audio.ll", "-o", OUT / "melodee.o")
+        else:
+            tc("cc", *irflags, "-c", OUT / "melodee_size.ll", "-o", OUT / "melodee.o")
+    elif os.environ.get("MELODEE_RAM_AUDIO") == "1":
+        raise SystemExit("resident audio requires MELODEE_SIZE=1 for the verified IR placement pass")
+    elf = OUT / "melodee.elf"
+    extra_ld = ["--defsym=AUDIO_RESIDENT=1"] if os.environ.get("MELODEE_RAM_AUDIO") == "1" else []
+    tc("pi32v2/bin/ld", "--gc-sections", *extra_ld, "-T", FW / "app.ld", OUT / "crt0.o", OUT / "fm1_vec.o", OUT / "fm1_isr.o",
+       OUT / "melodee.o", "-o", elf)
+    for sect in ("text.bin", "data.bin", "ramtext.bin", "dsptext.bin", "dsptables.bin", "audiotext.bin"):
         (OUT / sect).unlink(missing_ok=True)
     *_, syms, dis, rt = tc_all(("common/bin/objcopy", "-O", "binary", "-j", ".text", elf, OUT / "text.bin"),
                                ("common/bin/objcopy", "-O", "binary", "-j", ".data", elf, OUT / "data.bin"),
+                               ("common/bin/objcopy", "-O", "binary", "-j", ".dsp_text", elf, OUT / "dsptext.bin"),
+                               ("common/bin/objcopy", "-O", "binary", "-j", ".dsp_tables", elf, OUT / "dsptables.bin"),
                                ("common/bin/objcopy", "-O", "binary", "-j", ".ram_text", elf, OUT / "ramtext.bin"),
+                               ("common/bin/objcopy", "-O", "binary", "-j", ".audio_text", elf, OUT / "audiotext.bin"),
                                ("common/bin/objdump", "-t", elf),
-                               ("common/bin/objdump", "-d", elf),
-                               ("common/bin/objdump", "-d", "-j", ".ram_text", elf))
-    (OUT / "felucca.dis").write_text(dis)
+                               ("common/bin/objdump", "-d", "-mcpu=r3", "-mattr=+fprev1", elf),
+                               ("common/bin/objdump", "-d", "-mcpu=r3", "-mattr=+fprev1", "-j", ".ram_text", elf))
+    (OUT / "melodee.dis").write_text(dis)
 
     def symv(name):
         return int(re.search(r"^([0-9a-f]+) .*\s" + name + r"$", syms, re.M).group(1), 16)
     img = bytearray((OUT / "text.bin").read_bytes())
     # .ram_text and .data follow .text at their load addresses; crt0 copies them by words
-    for sect, lname in (("ramtext.bin", "_rt_load"), ("data.bin", "_data_load")):
+    for sect, lname in (("ramtext.bin", "_rt_load"), ("dsptext.bin", "_dsp_load"), ("dsptables.bin", "_dt_load"), ("data.bin", "_data_load"), ("audiotext.bin", "_audio_load")):
         load = symv(lname)
         if load % 4:
             raise SystemExit(f"{lname} {load:#x} is not word aligned")
@@ -214,7 +251,7 @@ def build_app():
             img += b"\xff" * (load - APP_XIP - len(img))
             img += blob
     img += b"\xff" * (-len(img) % 4)
-    (OUT / "felucca.bin").write_bytes(img)
+    (OUT / "melodee.bin").write_bytes(img)
     return bytes(img), syms, dis, rt
 
 
@@ -244,11 +281,90 @@ def check(img, syms, dis, rt):
     def sym(name):
         mm = re.search(r"^([0-9a-f]+) .*\s" + name + r"$", syms, re.M)
         return int(mm.group(1), 16) if mm else 0
+    code_end = sym("_audio_end") if sym("_audio_end") > sym("_audio_start") else sym("_dsp_end")
+    if sym("_guard_ram_end") != code_end:
+        errors.append("hardware PC guard does not cover all executable SRAM sections")
+    if os.environ.get("MELODEE_RAM_AUDIO") == "1":
+        manifest = json.loads((OUT / "melodee_audio.json").read_text())
+        live = 0
+        for name in manifest["resident"]:
+            address = sym(name)
+            if address:
+                live += 1
+                if not sym("_rt_start") <= address < sym("_guard_ram_end") <= 0x01C74000:
+                    errors.append(f"audio function {name} escaped SRAM")
+        current = None
+        for line in dis.splitlines():
+            label = re.match(r"^([\w.]+):$", line)
+            if label: current = label[1]
+            if current in manifest["resident"]:
+                call = re.search(r"\bcall -?\d+ <[^>]* : ([0-9a-f]+) >", line)
+                if call and int(call[1], 16) >= APP_XIP:
+                    errors.append(f"audio function {current} calls XIP directly")
+        notes.append(f"audio RAM: {live} linked functions verified in SRAM; dry mixer, no effects")
+    for name in ("rev_room", "rev_spring", "rev_hall", "dly_bus", "chorus", "distortion", "sl_enter", "sl_block", "perf_begin", "perf_block", "perf_end"):
+        if sym(name):
+            errors.append(f"removed effect {name} must not be linked")
+    # FM6's sample loops share internal RAM with Prophet. Outlined helpers
+    # must stay there too: a flash fetch per sample defeats the optimization,
+    # and direct RAM/XIP calls exceed the target's branch range.
+    if sym("fm6_render"):
+        kernel = "fm6_run_into" if sym("fm1_core1_start") else "fm6_run"
+        for name in (kernel, "fm6_op", "fm6_op_fb", "fm6_op_loop"):
+            address = sym(name)
+            if (name == kernel or address) and not sym("_dsp_start") <= address < sym("_dsp_end"):
+                errors.append(f"{name} must remain in internal DSP RAM")
+        notes.append("FM6: sample kernel and operator helpers in internal DSP RAM")
+    for name in ("fm6_output", "fm6_dc_samples", "fm6_control_ram", "fm6_eg_go", "fm6_eg_step", "fm6_peg_go", "p5_dc_samples", "mix_mono_samples", "master_samples", "master_out"):
+        address = sym(name)
+        if address and not sym("_dsp_start") <= address < sym("_dsp_end"):
+            errors.append(f"{name} must remain in internal DSP RAM")
+    for name in ("dr_bd", "dr_sd", "dr_tom", "dr_rs", "dr_cl", "dr_cp", "dr_ma",
+                 "dr_metal", "dr_cb", "dr_cy", "dr_hat"):
+        address = sym(name)
+        if address and not sym("_dsp_start") <= address < sym("_dsp_end"):
+            errors.append(f"{name} must remain in internal DSP RAM")
+    if sym("TANH_Q15") and not sym("_dt_start") <= sym("TANH_Q15") < sym("_dt_end"):
+        errors.append("808 saturation table must remain in internal DSP RAM")
+    if sym("fm1_core1_start"):
+        for name in ("fm1_core1_main", "audio_worker_loop"):
+            if not 0x01C00000 <= sym(name) < sym("_dsp_end"):
+                errors.append(f"{name} must remain in internal RAM for flash-safe idle")
+        if sym("_cpu1_stacks_hi") - sym("_cpu1_stacks_lo") != 8192:
+            errors.append("CPU1 requires separate 4 KiB user and supervisor stacks")
+        # Idle may call only the job's register-held callback; a compiler
+        # outlined XIP helper would break flash writes after completion.
+        body = dis.split("\naudio_worker_loop:", 1)[-1].split("\n\n", 1)[0]
+        if re.search(r"\bcall -?\d+", body):
+            errors.append("CPU1 polling loop contains a direct call; helpers must be inlined")
+        notes.append("CPU1: RAM polling loop, private 8 KiB stacks, bounded startup/join")
     bss = sym("_bss_end") - 0x01C08000
     pool = sym("_pool_end") - sym("_pool_start")
     notes.append(f"image {len(img)} B; RAM .data+.bss {bss} B of 98304; pool {pool} B of {0x54000}")
+    arena = sym("_resource_end") - sym("_resource_start")
+    if arena:
+        minimum = sym("_resource_minimum")
+        notes.append(f"audio working arena {arena} B available on demand (minimum {minimum})")
+        if arena < minimum: errors.append("audio working arena below worst-case budget")
     if bss > 96 * 1024:
         errors.append("RAM region overflow")
+    tails = 0
+    for name, floor, ceiling in (("low", sym("_dt_end"), 0x01C07F00),
+                                 ("data", sym("_bss_end"), 0x01C20000),
+                                 ("retained", sym("_noinit_end"), 0x01C7FD50)):
+        begin, end = sym(f"_resource_{name}_start"), sym(f"_resource_{name}_end")
+        if not floor <= begin <= end <= ceiling or (begin | end) % 4:
+            errors.append(f"{name} resource bank crosses a reserved SRAM boundary")
+        else:
+            tails += end - begin
+            notes.append(f"{name} SRAM tail {end - begin} B: {begin:#010x}..{end:#010x} (end exclusive)")
+    notes.append(f"total audio resources {arena + tails} B in four separate SRAM banks; reclaimed {tails} B")
+    if sym("fm1_cache_init"):
+        if not sym("_rt_start") <= sym("fm1_cache_init") < sym("_rt_end"):
+            errors.append("cache configuration must execute wholly in SRAM")
+        if (sym("_resource_cache_start"), sym("_resource_cache_end")) != (0x01F28000, 0x01F2F000):
+            errors.append("cache resource bank must cover exactly the seven freed data-cache ways")
+        notes.append(f"cache RAM: optional 28672 B after boot self-test; maximum resources {arena + tails + 28672} B")
     if 0x54000 - pool < 8192:                     # keep >= 8 KiB of the pool spare
         errors.append(f"pool headroom {0x54000 - pool} B < 8192 B")
     return errors, notes
@@ -301,16 +417,26 @@ def mmio_check():
 def main():
     global PRODUCT, VERSION
     ap = argparse.ArgumentParser()
-    ap.add_argument("--release", metavar="X.Y", help="release build: identity FM-1_9XY, version string X.Y")
+    mode = ap.add_mutually_exclusive_group()
+    mode.add_argument("--nightly", action="store_true", help="development package from the current next commit")
+    mode.add_argument("--release", metavar="X.Y[.Z]", help="release build: identity FM-1_9XY[Z], version string vX.Y[.Z]")
     ap.add_argument("--sdk", type=Path, help="JieLi AC79 SDK checkout (default: $AC79_SDK)")
     a = ap.parse_args()
-    name = "orbit.fwsc"
-    if a.release:                   # one digit each: the identity has room for two
-        m = re.fullmatch(r"(\d)\.(\d)(-[A-Za-z0-9]+)?", a.release)
+    name = "melodee.fwsc"
+    variant = "-1core" if os.environ.get("MELODEE_DUAL_CORE") == "0" else ""
+    if os.environ.get("MELODEE_SYS_CLK") == "320":
+        variant += "-320"
+    if a.release:                   # X one digit, Y one or two (1.0: FM-1_910; 1.0.0: FM-1_91000),
+        m = re.fullmatch(r"(\d)\.(\d{1,2})(?:\.(\d))?(-[A-Za-z0-9]+)?", a.release)   # Z one (Y two with it)
         if not m:
-            raise SystemExit(f"--release {a.release}: use X.Y or X.Y-suffix, one digit each")
-        PRODUCT = "SMK-37 Elite_016"
-        VERSION = a.release.upper() if "BETA" in a.release.upper() else a.release.upper() + " BETA"
+            raise SystemExit(f"--release {a.release}: use X.Y[.Z] or X.Y[.Z]-suffix (X one digit, Y one or two, Z one)")
+        PRODUCT = "SMK-37 Pro_900" + m[1] + (m[2].zfill(2) + m[3] if m[3] else m[2])
+        VERSION = "v" + a.release.lower()      # e.g. v1.0, v1.1-rc1
+        name = f"melodee-{a.release}{variant}.fwsc"
+    if a.nightly:
+        revision = subprocess.check_output(["git", "rev-parse", "--short=7", "HEAD"], cwd=SRC, text=True).strip()
+        VERSION = "next-" + revision
+        name = f"melodee-nightly{variant}.fwsc"
     fm1pkg_make.SDK = a.sdk
     for rel, sha in SDK_SHA256.items():          # fail early without the SDK
         if hashlib.sha256(fm1pkg_make.sdk_file(rel)).hexdigest() != sha:
@@ -334,41 +460,34 @@ def main():
         raise SystemExit("build: checks failed")
     pkg = fm1pkg_make.ufw(fm1pkg_make.flash_image(img, fm1pkg_make.KEY), ota, PRODUCT)
     (OUT / name).write_bytes(pkg)
-    att = SRC / "assets" / "samples-cc0" / "ATTRIBUTION.txt"
-    if att.exists():
-        shutil.copy(att, OUT / "ATTRIBUTION.txt")
-    print(f"app      {OUT / 'felucca.bin'}  {len(img)} B")
+    (OUT / "ATTRIBUTION.txt").unlink(missing_ok=True)
+    print(f"app      {OUT / 'melodee.bin'}  {len(img)} B")
     print(f"loader   {LDR / 'ota.bin'}  {len(ota)} B")
     print(f"package  {OUT / name}  {len(pkg)} B, identity {PRODUCT}")
-
-    if a.release:
-        rel = OUT / f"release-{a.release}"
+    if a.release:                   # what a release carries: the package, the app and every licence they need
+        rel = OUT / f"release-{a.release}{variant}"
         shutil.rmtree(rel, ignore_errors=True)
-        (rel / "LICENSES").mkdir(parents=True, exist_ok=True)
-        app = f"choralroot-{a.release}-app.bin"
+        (rel / "LICENSES").mkdir(parents=True)
+        app = f"melodee-{a.release}{variant}-app.bin"
         (rel / name).write_bytes(pkg)
+        (rel / f"melodee-{a.release}.fwsc").write_bytes(pkg)
+        (rel / f"melodee.fwsc").write_bytes(pkg)
+        (rel / f"melodee-smk37.fwsc").write_bytes(pkg)
         (rel / f"choralroot-{a.release}.fwsc").write_bytes(pkg)
-        (rel / app).write_bytes(img)
+        (rel / f"choralroot-{a.release}-app.bin").write_bytes(img)
         (rel / f"felucca-{a.release}.fwsc").write_bytes(pkg)
         (rel / f"felucca-{a.release}-app.bin").write_bytes(img)
-        (rel / "SHA256SUMS").write_text("".join(f"{hashlib.sha256(b).hexdigest()}  {n}" + chr(10) for n, b in ((name, pkg), (app, bytes(img)))))
-        if (SRC / "LICENSES").is_dir():
-            for f in sorted((SRC / "LICENSES").glob("*.txt")):
-                shutil.copy(f, rel / "LICENSES" / f.name)
-        for doc in ("LICENSE", "LICENSING.md"):
-            doc_src = SRC / doc
-            if doc_src.exists():
-                shutil.copy(doc_src, rel / doc)
-            else:
-                (rel / doc).write_text("SPDX-License-Identifier: GPL-3.0-only" + chr(10))
-        att = SRC / "assets" / "samples-cc0" / "ATTRIBUTION.txt"
-        if att.exists():
-            shutil.copy(att, rel / "ATTRIBUTION.txt")
-        print(f"release  {rel}/")
 
+        (rel / app).write_bytes(img)
+        (rel / "SHA256SUMS").write_text("".join(f"{hashlib.sha256(b).hexdigest()}  {n}\n"
+                                                for n, b in ((name, pkg), (app, bytes(img)))))
+        for f in sorted((SRC / "LICENSES").glob("*.txt")):
+            shutil.copy(f, rel / "LICENSES" / f.name)
+        for doc in ("LICENSE", "LICENSING.md"):
+            shutil.copy(SRC / doc, rel / doc)
+        print(f"release  {rel}/")
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

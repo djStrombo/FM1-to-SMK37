@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
-"""Load WAV files into a Felucca user sample slot (USR1..USR4) over USB-MIDI.
+"""Load WAV files into a Melodee user sample slot (USR1..USR3) over USB-MIDI.
 
   fm1_sample_upload.py info
-  fm1_sample_upload.py load SLOT NAME file.wav[:ROOT[:LO-HI]] ...   (SLOT 1..4)
+  fm1_sample_upload.py load SLOT NAME file.wav[:ROOT[:LO-HI]] ...   (SLOT 1..3)
   fm1_sample_upload.py erase SLOT
   fm1_sample_upload.py build NAME OUT_PREFIX file.wav[...] ...      (no device: writes OUT_PREFIX.hdr / .bin)
 
@@ -14,6 +14,7 @@ name, C4 = 60, else 60); without LO-HI the zones split the keyboard between thei
 A slot holds 80 KiB (about 7 s at 22050 Hz). Protocol: web/EDITOR_PROTOCOL.md, cmds 11..15.
 Needs mido (and a backend such as python-rtmidi) for the device commands.
 """
+import re
 import sys
 import time
 from pathlib import Path
@@ -42,10 +43,10 @@ class Link:
         except ImportError:
             sys.exit("needs mido: pip install mido python-rtmidi")
         self.mido = mido
-        outs = [n for n in mido.get_output_names() if "Felucca" in n]
-        ins = [n for n in mido.get_input_names() if "Felucca" in n]
+        outs = [n for n in mido.get_output_names() if re.search("melodee|felucca", n, re.I)]
+        ins = [n for n in mido.get_input_names() if re.search("melodee|felucca", n, re.I)]
         if not outs or not ins:
-            sys.exit("no MIDI port named Felucca: connect the FM-1 (running Felucca) by USB")
+            sys.exit("no MIDI port named Melodee: connect the FM-1 (running Melodee) by USB")
         self.o = mido.open_output(outs[0])
         self.i = mido.open_input(ins[0])
         for _ in range(3):                          # the first frame after opening the port can be lost
@@ -73,9 +74,6 @@ def build(name, specs):
     zones = []
     for spec in specs:
         parts = spec.split(":")
-        # Keep a Windows drive prefix separate from the optional :ROOT:LO-HI suffix.
-        if len(parts) > 1 and len(parts[0]) == 1 and parts[0].isalpha() and parts[1].startswith(("/", "\\")):
-            parts = [parts[0] + ":" + parts[1], *parts[2:]]
         path = Path(parts[0])
         root = int(parts[1]) if len(parts) > 1 and parts[1] else sio.note_from_name(path.stem)
         lo, hi = (int(v) for v in parts[2].split("-")) if len(parts) > 2 else (None, None)
@@ -104,8 +102,8 @@ def main():
             print(f"{sys.argv[2]}: {len(data)} B ADPCM, {hdr[6]} zones")
             return
     if cmd != "info":
-        if len(sys.argv) < 3 or sys.argv[2] not in ("1", "2", "3", "4"):
-            sys.exit("SLOT is 1, 2, 3 or 4 (USR4: SLOOP 2.4 and later)")
+        if len(sys.argv) < 3 or sys.argv[2] not in ("1", "2", "3"):
+            sys.exit("SLOT is 1, 2 or 3")
         slot = int(sys.argv[2]) - 1
     link = Link()
     if cmd == "info":
@@ -138,5 +136,4 @@ if __name__ == "__main__":
     try:
         main()
     except TimeoutError as e:
-        sys.exit(f"{e}: is Felucca running, and no other app using its MIDI port?")
-
+        sys.exit(f"{e}: is Melodee running, and no other app using its MIDI port?")

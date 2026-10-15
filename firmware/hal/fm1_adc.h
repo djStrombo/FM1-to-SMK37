@@ -46,5 +46,4 @@ static int32_t fm1_adc_read(uint32_t ch)
     return t == 20000u ? -1 : (int32_t)v;
 }
 
-
 #endif

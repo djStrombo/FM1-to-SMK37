@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
 """Sample helpers shared by gen_samples.py (built-in sets), fm1_sample_upload.py
-(user slots) and tests/pitch.py. The web editor (web/editor.html) has a JS port of
+(user slots) and the host test pitch.py. The web editor (web/editor.html) has a JS port of
 read_any_wav / resample / ima_encode / user_slot that must give the same bytes
 (web/test_web.mjs checks it).
 
@@ -249,7 +249,7 @@ def key_split(roots):
             for j, r in enumerate(roots)]
 
 
-# ---- user sample slots (firmware/src/eng_sample.c, web/EDITOR_PROTOCOL.md)
+# ---- user sample slots (firmware/src/sample_data.c, web/EDITOR_PROTOCOL.md)
 SLOT_SIZE, SLOT_DATA_OFF, SLOT_RATE, SLOT_ZONES = 0x14000, 512, 22050, 16
 SLOT_HDR_LEN = 32 + SLOT_ZONES * 28
 SLOT_MAX_DATA = SLOT_SIZE - SLOT_DATA_OFF
@@ -293,4 +293,3 @@ def user_slot(name, zones):
     nm = re.sub(r"[^\x20-\x7E]", "", name.upper())[:8].encode().ljust(8, b"\0")
     hdr = struct.pack("<IHBB8sII8x", 0x504D5346, 1, len(zs), 0, nm, len(data), zlib.crc32(data)) + zb
     return hdr.ljust(SLOT_HDR_LEN, b"\0"), bytes(data)
-

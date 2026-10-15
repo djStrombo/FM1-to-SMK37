@@ -92,7 +92,7 @@ static const uint8_t SMK_LEDC[SMK_NLED] = {0x0c, 0x12, 0x00, 0x10, 0x0d, 0x1d, 0
 /* analog: mux address -> pad on mux A (ch1); mux B (ch8) = the same + 8 (stock table) */
 static const uint8_t SMK_PADMUX[8] = {1, 2, 3, 0, 4, 7, 5, 6};
 /* mux C (ch2): address 0..3 -> fader 1,2,3,0; 4, 5 wheels; 6 pedal; 7 battery */
-static const uint8_t SMK_FADMUX[4] = {0, 1, 2, 3};
+static const uint8_t SMK_FADMUX[4] = {1, 2, 3, 0};   /* mux addr -> logical fader: F1 sits on addr 3 */
 enum { SMK_ADC_PADA = 1, SMK_ADC_PADB = 8, SMK_ADC_MUXC = 2 };
 /* the pads are the 16 white keys of the FM-1's 27 (F3 G3 A3 B3 C4 D4 E4 F4 G4 A4 B4 C5 D5 E5 F5 G5): the step
  * grid, the drum sounds and every layer's tiles land on them, in reading order: the top row (hardware pads 0..7,
@@ -147,6 +147,8 @@ static volatile uint16_t smk_extq[SMK_EXTQ];
 static volatile uint8_t smk_extq_w, smk_extq_r;
 
 static uint8_t fm1_led[SMK_NLED];     /* 1 = lit (button LED i = button i) */
+#define SMK_BT_BTN 11u                /* physical BT button: tap tempo (+ its LED = beat light) */
+static volatile uint8_t smk_bt_taps;  /* BT presses not yet consumed by the UI */
 static uint8_t fm1_led_dim[3][FM1_NCOL];
 static uint8_t fm1_led_dim_mask[3];
 static uint8_t fm1_led_bg[FM1_NCOL];
@@ -355,6 +357,8 @@ static void smk__buttons(void)
             continue;
         *c = 0;
         smk_raw_btn_state ^= bit;
+        if (i == SMK_BT_BTN && !was_down)
+            smk_bt_taps++;
         uint8_t act = SMK_BTN_MAP[i];
         if (act < 32u) {
             uint32_t lbit = 1u << act;

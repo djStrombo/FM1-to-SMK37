@@ -10,4 +10,3 @@ curl -fL --retry 3 https://pkgman.jieliapp.com/s/linux-toolchain | tar -xJ -C "$
 TC="$(ls -d "$DEST"/jieli-linux-toolchains-* | sort | tail -1)"
 ln -sfn "$(basename "$TC")" "$DEST/toolchain"
 echo "JIELI_TOOLCHAIN=$DEST/toolchain ($(basename "$TC"))"
-

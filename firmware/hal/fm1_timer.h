@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 /* FM-1 TIMER5: the 10 kHz system tick (input scan, USB poll, ms count).
- * TIMER4 is the free-running time base (fm1_time.h); the ROM and the SPL
- * leave both free. JL_TIMER5 = 0x10900: CON, CNT +4, PRD +8.
+ * TIMER4 is the free-running time base (fm1_time.h); both are unused by the
+ * ROM and the SPL. JL_TIMER5 = 0x10900: CON, CNT +4, PRD +8.
  *
  *   fm1_timer5_start(isr, prio)   OSC /4 = 6 MHz, PRD 600 -> 10 kHz, IRQ 63
  *   fm1_timer5_ack()              first thing in the ISR
@@ -26,4 +26,3 @@ FM1_INLINE void fm1_timer5_start(void (*isr)(void), uint32_t prio)   /* IRQs off
 }
 
 FM1_INLINE void fm1_timer5_ack(void) { FM1_T5_CON |= 0x4000u; }
-

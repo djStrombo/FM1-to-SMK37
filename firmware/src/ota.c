@@ -1,18 +1,19 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
-/* M-UPGRADE update entry.
+/* M-UPGRADE entry: "step 1 lite".
  *
  * The updater talks SysEx (F0 pack7(00 59 cmd len24 body chk) F7):
- *   cmd 0x11  handshake -> we answer our package identity (FELUCCA_ID)
+ *   cmd 0x11  handshake -> we answer our package identity (MELODEE_ID)
  *   F0 22 24 35 7F F7  upgrade -> ota_session(): pull parts of the package
  *     with cmd 0x30 read requests, check them, stage the package's update
- *     loader at 0xE0000 (outside Felucca's store), ask 0xE0000000 ("success"),
+ *     loader at 0xE0000 (outside Melodee's store), ask 0xE0000000 ("success"),
  *     then write the UPDATA_PARM record (flash 0xE4F00 + RAM 0x01C7FD88) and
  *     reset. The SPL runs the loader, which installs the package.
  * Nothing is committed before the host's "success"; any failure erases the
- * staging area and Felucca carries on.
+ * staging area and Melodee carries on.
  *
- * The firmware (felucca.c) and the host test supply these hooks:
+ * Portable core: the firmware (melodee.c) and the Mac test (ota_test.c)
+ * supply these hooks:
  *   ota_wire_send(p, n)        one complete F0..F7 message to the host
  *   ota_frame_get(&p, &n)      next received SysEx (7-bit bytes between F0/F7), 0 if none
  *   ota_frame_done()           release it
@@ -28,6 +29,10 @@
 #define OTA_LDR_DCRC 0x5881u
 #define OTA_LDR_LEN 0x4DE1u
 #define OTA_FRAME_MAX 640u                       /* 512-B response = 605 wire bytes */
+#ifndef OTA_SCRATCH                              /* 2 KiB of work space while staging (melodee.c: the project staging) */
+static uint8_t ota_scratch[0x800];
+#define OTA_SCRATCH ota_scratch
+#endif
 
 static int ota_wire_send(const uint8_t *p, uint32_t n);
 static int ota_frame_get(const uint8_t **p, uint32_t *n);
@@ -127,19 +132,11 @@ static int ota_send_msg(uint32_t cmd, const uint8_t *body, uint32_t n)   /* n <=
 
 static void ota_reply_identity(void)
 {
-#ifdef OTA_IDENTITY
-    const char *id_text = OTA_IDENTITY;
-    uint8_t id[27];
-    uint32_t i;
-    for (i = 0; i < sizeof id; i++) id[i] = 0;
-    for (i = 0; i < sizeof id && id_text[i]; i++) id[i] = (uint8_t)id_text[i];
-#else
-    static const char ID[] = FELUCCA_ID;         /* loader / unmodified builds */
+    static const char ID[] = MELODEE_ID;         /* == the package marker string */
     uint8_t id[27];
     uint32_t i;
     for (i = 0; i < sizeof id; i++)
         id[i] = i < sizeof ID - 1u ? (uint8_t)ID[i] : 0;
-#endif
     ota_send_msg(0x11, id, sizeof id);
 }
 
@@ -235,14 +232,11 @@ static int ota_stage_head(uint32_t len)
 }
 
 /* UFW header + entry list (hdr: 1 KiB) from the host -> offset / length of
- * flash.bin (entry type 0) and ota.bin (type 100), 0 if absent, and the CRC16 the
- * package stores for flash.bin (the loader checks what it was served against it);
- * -1 read, -2 CRC */
-static int ota_ufw(uint8_t *hdr, uint32_t *fl_off, uint32_t *fl_len, uint32_t *ota_off, uint32_t *ota_len,
-                   uint32_t *fl_crc)
+ * flash.bin (entry type 0) and ota.bin (type 100), 0 if absent; -1 read, -2 CRC */
+static int ota_ufw(uint8_t *hdr, uint32_t *fl_off, uint32_t *fl_len, uint32_t *ota_off, uint32_t *ota_len)
 {
     uint32_t i, nent;
-    *fl_off = *fl_len = *ota_off = *ota_len = *fl_crc = 0;
+    *fl_off = *fl_len = *ota_off = *ota_len = 0;
     if (ota_read(0, hdr, 512) || ota_read(512, hdr + 512, 512))
         return -1;
     ota_jl_enc(hdr, 0x40);
@@ -254,7 +248,6 @@ static int ota_ufw(uint8_t *hdr, uint32_t *fl_off, uint32_t *fl_len, uint32_t *o
         uint8_t *e = hdr + 0x40 + i * 0x50u;
         ota_jl_enc(e, 0x50);
         if (ota_rd16(e) == 0) {                             /* flash.bin */
-            *fl_crc = ota_rd16(e + 4);
             *fl_off = ota_rd32(e + 8);
             *fl_len = ota_rd32(e + 12);
         }
@@ -268,17 +261,20 @@ static int ota_ufw(uint8_t *hdr, uint32_t *fl_off, uint32_t *fl_len, uint32_t *o
 
 static int ota_stage(void)                       /* steps 1..6; 0 = host said success */
 {
-    static uint8_t hdr[0x400], b[512], mine[512];
-    uint32_t i, n, ota_off, ota_len, fl_off, fl_len, fl_crc, c, len, own, official;
+    uint8_t *hdr = OTA_SCRATCH, *b = hdr + 0x400, *mine = b + 512;
+    uint32_t i, n, ota_off, ota_len, fl_off, fl_len, c, len, own, official;
     int rc;
     /* 1. UFW header + entry list */
     ota_show(1, 0);
-    if ((rc = ota_ufw(hdr, &fl_off, &fl_len, &ota_off, &ota_len, &fl_crc)) != 0)
+    if ((rc = ota_ufw(hdr, &fl_off, &fl_len, &ota_off, &ota_len)) != 0)
         return rc;
+    /* Any partition installs here: the package's own loader decides (ldr_core.c: this Melodee's moves the
+     * Prophet banks up before its app area, 0x93000, is written; an older one's ends at 0x89000). */
+    (void)fl_len;
     if (!fl_off || !ota_off)
         return -3;
     /* 2. which loader: the official one (known CRCs; it rewrites the whole flash.bin
-     *    including the head) or Felucca's own (app area only, checks the chip key) */
+     *    including the head) or Melodee's own (app area only, checks the chip key) */
     if (ota_read(ota_off, b, 512))
         return -6;
     len = ota_rd32(b + 8);
@@ -366,20 +362,26 @@ static int ota_session(void)
     ota_wr16(parm + 2, 0x5A0Du);
     ota_wr16(parm + 4, 0x5A01u);
     ota_wr16(parm + 6, 0x5441u);
+    #if BOARD_SMK37
+    const char *smk_id = "ota-SMK-37 Pro_900";
+    for (i = 0; i < 18u; i++)
+        parm[8 + i] = (uint8_t)smk_id[i];
+#else
     for (i = 0; i < 12u; i++)
         parm[8 + i] = (uint8_t)"ota-FM-1_015"[i];    /* the loader's own USB identity */
+#endif
     ota_wr32(parm + 72, OTA_AREA);
     ota_wr16(parm, ota_crc16(parm + 2, 78, 0));
-#if FELUCCA_OTA_DRYRUN
+#if MELODEE_OTA_DRYRUN
     ota_unstage();
     ota_show(9, 1);                                 /* 1 = dry run complete */
     return 1;
 #endif
-#ifndef FELUCCA_OTA_RAMONLY
-#define FELUCCA_OTA_RAMONLY 0                       /* 1: RAM record only, no power-loss resume (a power
+#ifndef MELODEE_OTA_RAMONLY
+#define MELODEE_OTA_RAMONLY 0                       /* 1: RAM record only, no power-loss resume (a power
                                                      * cycle leaves a broken loader behind) */
 #endif
-    if (!FELUCCA_OTA_RAMONLY && (ota_prog(OTA_RES, parm, sizeof parm) || ota_fread(OTA_RES, back, sizeof back) ||
+    if (!MELODEE_OTA_RAMONLY && (ota_prog(OTA_RES, parm, sizeof parm) || ota_fread(OTA_RES, back, sizeof back) ||
         !ota_memeq(back, parm, sizeof parm))) {
         ota_unstage();
         ota_show(9, -14);
@@ -406,4 +408,3 @@ static int ota_boot_cleanup(void)
         ota_unstage();
     return (int)used;
 }
-

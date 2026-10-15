@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 /* FM-1 SPI NOR at runtime: erase / program / read. Used only when
- * FELUCCA_FLASH is 1.
+ * MELODEE_FLASH is 1.
  *
  * Everything that executes while the SFC (XIP) is switched off lives in
  * .ram_text and touches only SFRs, the stack and RAM buffers: no .rodata, no
  * libcalls, no XIP-resident helpers. Call the fl_*_ram() entry points with
  * interrupts disabled. Same sequence as the AC79 SDK flash driver
- * (enter_spi_code, norflash_erase, norflash_wait_ok, exit_spi_code).
+ * (cpu.a/vm_sfc.c.o: enter_spi_code, norflash_erase, norflash_wait_ok, exit_spi_code).
  */
 #pragma once
 #include <stdint.h>
@@ -35,23 +35,20 @@ static inline void *fl_far(void *p) { void *volatile q = p; return q; }
 #define T4_CNT          REG32(0x10804u)            /* TIMER4, 24 MHz free-running */
 
 #define FL_XIP(off)     FM1_XIP(off)              /* fm1_xip.h */
-#define FL_DATA_LO      0x00097000u                /* Felucca main store */
+#define FL_DATA_LO      0x00097000u                /* Melodee main store */
 #define FL_DATA_HI      0x000E0000u
-#define FL_GLOB_LO      0x000FC000u                /* Felucca superblock / globals */
+#define FL_GLOB_LO      0x000FC000u                /* Melodee superblock / globals */
 #define FL_GLOB_HI      0x000FF000u
+#define FL_BANK_EXT_LO  0x000E5000u                /* expanded presets and project extension copies; after OTA staging */
+#define FL_BANK_EXT_HI  0x000FB000u
 #define FL_OTA_LO       0x000E0000u                /* M-UPGRADE loader staging, ota.c */
 #define FL_OTA_HI       0x000E5000u
-#define FL_FM6_LO       0x000E5000u                /* the FM6 patch bank (fm6_bank.c), A / B sectors; SLOOP 2.4 */
-#define FL_FM6_HI       0x000E7000u
-#define FL_USR4_LO      0x000E7000u                /* the user sample slot USR4 (eng_sample.c), 80 KiB; SLOOP 2.4 */
-#define FL_USR4_HI      0x000FB000u                /* (0xFB000..0xFBFFF stays free) */
 /* [off, off + n) inside [lo, hi), without wrapping: off + n can overflow, and
  * the 1 MiB part ignores the high address bits, so a wrapped range lands low. */
 #define FL_IN(off, n, lo, hi) ((uint32_t)(off) >= (lo) && (uint32_t)(off) <= (hi) && \
                                (uint32_t)(n) <= (hi) - (uint32_t)(off))
-/* Felucca's own store (projects, user samples; settings; the FM6 bank) */
-#define FL_STORE_OK(off, n) (FL_IN(off, n, FL_DATA_LO, FL_DATA_HI) || FL_IN(off, n, FL_GLOB_LO, FL_GLOB_HI) || \
-                             FL_IN(off, n, FL_FM6_LO, FL_FM6_HI) || FL_IN(off, n, FL_USR4_LO, FL_USR4_HI))
+/* Melodee's own store (projects, user samples; settings) */
+#define FL_STORE_OK(off, n) (FL_IN(off, n, 0x93000u, 0x97000u) || FL_IN(off, n, FL_DATA_LO, FL_DATA_HI) || FL_IN(off, n, FL_GLOB_LO, FL_GLOB_HI) || FL_IN(off, n, FL_BANK_EXT_LO, FL_BANK_EXT_HI))
 /* Where the RAM driver may erase / program. The app build allows only its own
  * data regions; the update loader (firmware/loader) defines its own window. */
 #ifndef FL_RANGE_OK
@@ -222,7 +219,7 @@ static RAMFN int fl_read_ram(uint32_t off, uint8_t *dst, uint32_t n)   /* 0x0B f
 static void fl_plain_window_init(void)
 {
     SFCENC_CON &= (uint8_t)~2u;
-    SFCENC_UNENC_L = FL_XIP(0x93000u);            /* 0x0208F000 */
+    SFCENC_UNENC_L = FL_XIP(0x93000u);            /* (the app area ends there; the Prophet banks begin) */
     SFCENC_UNENC_H = 0x07FFFFFFu;
     SFCENC_CON |= 2u;
     __asm__ volatile("cli" ::: "memory");
@@ -266,4 +263,3 @@ static int fl_verify_xip(uint32_t off, const uint8_t *ref, uint32_t n)
     for (i = 0; i < n; i++) if (p[i] != ref[i]) return -(int)(i + 1);
     return 0;
 }
-

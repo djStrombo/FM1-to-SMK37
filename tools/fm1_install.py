@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
-"""Install a Felucca package (.fwsc) on an FM-1 over USB-MIDI.
+"""Install a Melodee package (.fwsc) on an FM-1 over USB-MIDI.
 
 The same update as the web installer (web/fm1ota.js): step 1, the
 running firmware reads parts of the package and starts the update loader;
@@ -10,6 +10,7 @@ device asks (SysEx read requests on the logical image) and we answer. Then
 the FM-1 restarts and the installed identity is checked.
 
   fm1_install.py PACKAGE.fwsc [--port NAME] [--yes] [--force]
+  fm1_install.py FM-1.fwsc            (the official V15 file: back to the stock firmware)
   fm1_install.py --info [--port NAME]
 
 If the FM-1 is still in update mode (an earlier install was cut off), the
@@ -17,11 +18,10 @@ install finishes the write. Needs mido with python-rtmidi.
 
 Exit codes: 0 done, 1 cancelled or other error, 2 bad arguments or package,
 3 FM-1 not found, 4 connection lost or the device stopped, 5 timeout (no
-loader / no restart), 6 wrong model, another identity after the install, or the
-FM-1 is in the update mode of another firmware (only SLOOP's own loader,
-ota-FM-1_9XX, is resumed).
+loader / no restart), 6 wrong model, or another identity after the install.
 """
 import argparse
+import hashlib
 import queue
 import re
 import sys
@@ -33,7 +33,10 @@ FINISH_CHECK, FINISH_WRITE = 0xE0000000, 0xF0000000
 MAXDATA = 512
 BLOCKS, BLK, KEEP = 20, 0x30, 0x2F
 LOADER_MARK = b"FELUCCA-LOADER-1"
-PORT_RE = re.compile(r"fm-1|felucca|sloop|clipper|ota|composite|sinco|usb-midi", re.I)   # never probe other gear
+# the unmodified official FM-1 V15 (FM-1.fwsc from M-VAVE): returning to it is allowed without --force,
+# as the web installer's "Return to official V15" (web/fm1pkg.js validateStockPackage)
+STOCK_V15_SHA256 = "db1642b2b6fa5c2cccb11ffd13878068bb28601678d3644049f99dc40e7edb8a"
+PORT_RE = re.compile(r"fm-1|melodee|felucca|ota|composite|sinco|usb-midi", re.I)   # never probe other gear
 
 # seconds; the tests shorten them
 DELAY = {"open": 0.3, "start": 2.0, "reply": 0.01, "loader": 3.0, "reboot": 3.0, "retry": 1.0,
@@ -41,7 +44,7 @@ DELAY = {"open": 0.3, "start": 2.0, "reply": 0.01, "loader": 3.0, "reboot": 3.0,
          "wait_loader": 30.0, "wait_reboot": 40.0}
 
 EXIT = {"usage": 2, "badpkg": 2, "notfound": 3, "model": 6, "lost": 4, "stopped": 4, "badreq": 4,
-        "noloader": 5, "noreturn": 5, "mismatch": 6, "foreign": 6}
+        "noloader": 5, "noreturn": 5, "mismatch": 6}
 
 
 class InstallError(Exception):
@@ -356,10 +359,6 @@ class Updater:
         if model_of(dev.id.text) != model_of(product):
             dev.link.close()
             raise InstallError("model", f"the device is {dev.id.text}, the package is for {product}")
-        if dev.id.loader and not re.fullmatch(r"ota-FM-1_9\d\d", dev.id.text, re.I):
-            dev.link.close()           # another firmware's loader: its image layout may differ
-            raise InstallError("foreign", f"the FM-1 is in the update mode of another firmware ({dev.id.text}): "
-                                          "finish that update with its own updater (M-UPGRADE), then install again")
         ota = dev if dev.id.loader else self.check(dev, image, step)
         self.write(ota, image, step)
         return self.verify(product, step)
@@ -375,60 +374,12 @@ def load_package(path, force):
     product = product_of(raw)
     if not re.fullmatch(r"[^_]+_\d+", product):
         raise InstallError("badpkg", f"{path}: not an FM-1 package (identity {product!r})")
-    if LOADER_MARK not in raw and not force:
-        raise InstallError("badpkg", f"{path}: no Felucca update loader in this package; "
-                                     "only Felucca's own packages are installed (--force overrides)")
-    image = logical_image(raw)
-    bad = package_damage(image)
-    if bad:
-        raise InstallError("badpkg", f"{path}: damaged package ({bad}); nothing was written. "
-                                     "Download it again.")
-    return product, image
-
-
-def _crc16(data, crc=0):
-    """CRC-16/XMODEM, as the package and the device use"""
-    for b in data:
-        crc ^= b << 8
-        for _ in range(8):
-            crc = ((crc << 1) ^ 0x1021) & 0xFFFF if crc & 0x8000 else (crc << 1) & 0xFFFF
-    return crc
-
-
-def _dec(b):
-    """JieLi ENC stream cipher (its own inverse)"""
-    out, key = bytearray(b), 0xFFFF
-    for i in range(len(out)):
-        out[i] ^= key & 0xFF
-        key = ((key << 1) ^ (0x1021 if key & 0x8000 else 0)) & 0xFFFF
-    return bytes(out)
-
-
-def package_damage(image):
-    """what is wrong with the update image (header, file list, each file's CRC), or None; the device
-    only checks the loader before it rewrites the firmware, so a damaged file is caught here"""
-    if len(image) < 0x40:
-        return "too short"
-    hdr = _dec(image[0:0x40])
-    if _crc16(hdr[2:0x40]) != int.from_bytes(hdr[0:2], "little"):
-        return "header CRC"
-    count = int.from_bytes(hdr[8:10], "little")
-    if not 1 <= count <= 8 or len(image) < 0x40 + 0x50 * count:
-        return "file list"
-    lst = image[0x40:0x40 + 0x50 * count]
-    if _crc16(lst) != int.from_bytes(hdr[2:4], "little"):
-        return "file list CRC"
-    for i in range(count):
-        e = _dec(lst[i * 0x50:(i + 1) * 0x50])
-        dcrc = int.from_bytes(e[4:6], "little")
-        off = int.from_bytes(e[8:12], "little")
-        size = int.from_bytes(e[12:16], "little")
-        name = e[0x40:0x50].split(b"\0")[0].decode("ascii", "replace")
-        if off + size > len(image):
-            return f"{name}: cut short"
-        if _crc16(image[off:off + size]) != dcrc:
-            return f"{name}: CRC"
-    return None
+    official = hashlib.sha256(raw).hexdigest() == STOCK_V15_SHA256
+    if LOADER_MARK not in raw and not official and not force:
+        raise InstallError("badpkg", f"{path}: no Melodee update loader in this package; only Melodee's own "
+                                     "packages and the unmodified official V15 (FM-1.fwsc) are installed "
+                                     "(--force overrides)")
+    return product, logical_image(raw)
 
 
 def not_found(up):
@@ -501,11 +452,11 @@ def ask_tty(prompt):
 
 def main(argv=None, backend=None, out=sys.stdout, ask=ask_tty):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("package", nargs="?", help="Felucca package (.fwsc)")
+    ap.add_argument("package", nargs="?", help="Melodee package (.fwsc)")
     ap.add_argument("--info", action="store_true", help="print the identity of the connected FM-1")
     ap.add_argument("--port", metavar="NAME", help="MIDI port to use (part of its name)")
     ap.add_argument("--yes", action="store_true", help="do not ask for confirmation")
-    ap.add_argument("--force", action="store_true", help="install a package without the Felucca loader marker")
+    ap.add_argument("--force", action="store_true", help="install a package without the Melodee loader marker")
     a = ap.parse_args(argv)
     if bool(a.info) == bool(a.package):
         ap.error("give a PACKAGE.fwsc or --info")
@@ -526,4 +477,3 @@ def main(argv=None, backend=None, out=sys.stdout, ask=ask_tty):
 
 if __name__ == "__main__":
     sys.exit(main())
-
